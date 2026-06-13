@@ -1,19 +1,59 @@
+# Dependencies
 node_modules/
-dist/
-build/
-.vite/
 
+# Build outputs
+dist/
+dist-ssr/
+build/
+.output/
+.vite/
+.vinxi/
+.nitro/
+
+# TanStack generated files
+.tanstack/
+
+# Environment files
 .env
 .env.local
 .env.*
+*.local
+.dev.vars
 
+# Coverage
 coverage/
 
-.vscode/
-.idea/
-
+# Logs
+logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Cache / TypeScript
 *.tsbuildinfo
 
+# Wrangler / Cloudflare
+.wrangler/
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+
+# IDEs
+.idea/
+
+# OS files
 .DS_Store
 Thumbs.db
+
+# Visual Studio
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Swap files
+*.sw?
