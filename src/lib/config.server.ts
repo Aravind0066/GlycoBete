@@ -19,8 +19,7 @@ import process from "node:process";
 export function getServerConfig() {
   return {
     nodeEnv: process.env.NODE_ENV,
-    // Add server-only values here, e.g.:
-    //   databaseUrl: process.env.DATABASE_URL,
-    //   stripeSecretKey: process.env.STRIPE_SECRET_KEY,
+    geminiApiKey: process.env.GEMINI_API_KEY ?? process.env.VITE_GEMINI_API_KEY,
+    databasePath: process.env.DATABASE_PATH,
   };
 }

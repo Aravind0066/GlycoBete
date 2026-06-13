@@ -35,8 +35,9 @@ lerna-debug.log*
 # Cache / TypeScript
 *.tsbuildinfo
 
-# Wrangler / Cloudflare
-.wrangler/
+# Database
+data/
+
 
 # VS Code
 .vscode/*

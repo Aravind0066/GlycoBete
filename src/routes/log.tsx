@@ -1,13 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
+import { toast } from "sonner";
+import { Camera, X } from "lucide-react";
+
 import { AppShell } from "@/components/AppShell";
 import { HeartLoading } from "@/components/HeartLoading";
 import { LevelUpOverlay } from "@/components/LevelUpOverlay";
-import { storage, grantXP, XP_REWARDS, unlockAchievement } from "@/lib/gameEngine";
-import { analyzeMeal, readPrescription, type MealAnalysis } from "@/lib/geminiApi";
+import { api } from "@/lib/api";
+import type { MealAnalysis } from "@/lib/geminiApi";
+import { XP_REWARDS } from "@/lib/gameEngine";
 import type { PrescriptionMed } from "@/lib/types";
-import { toast } from "sonner";
-import { Camera, X } from "lucide-react";
 
 export const Route = createFileRoute("/log")({
   head: () => ({ meta: [{ title: "Log Meal — GlycoBete" }] }),
@@ -22,11 +24,11 @@ function LogPage() {
   const [loading, setLoading] = useState<string | null>(null);
   const [levelUp, setLevelUp] = useState<string | null>(null);
 
-  // prescription
   const [image, setImage] = useState<{ data: string; mime: string; preview: string } | null>(null);
-  const [rxResult, setRxResult] = useState<{ meds: PrescriptionMed[]; notes: string } | null>(null);
+  const [rxResult, setRxResult] = useState<{ meds: PrescriptionMed[]; notes: string } | null>(
+    null,
+  );
 
-  // meal
   const [meal, setMeal] = useState("");
   const [type, setType] = useState("Lunch");
   const [time, setTime] = useState(new Date().toTimeString().slice(0, 5));
@@ -48,10 +50,10 @@ function LogPage() {
     if (!image) return;
     setLoading("Reading prescription...");
     try {
-      const res = await readPrescription(image.data, image.mime);
+      const res = await api.readPrescription(image.data, image.mime);
       setRxResult({ meds: res.medications, notes: res.doctor_notes });
-      const r = grantXP(XP_REWARDS.prescription_upload);
-      if (r.leveledUp && r.newLevelTitle) setLevelUp(r.newLevelTitle);
+      const { result: xp } = await api.grantXP(XP_REWARDS.prescription_upload);
+      if (xp.leveledUp && xp.newLevelTitle) setLevelUp(xp.newLevelTitle);
       toast.success("+40 XP — Prescription decoded");
     } catch {
       toast.error("Couldn't read prescription");
@@ -60,20 +62,20 @@ function LogPage() {
     }
   };
 
-  const saveMeds = () => {
+  const saveMeds = async () => {
     if (!rxResult) return;
-    storage.setMeds(rxResult.meds);
+    await api.setMeds(rxResult.meds);
     toast.success("Saved to your profile");
   };
 
   const submitMeal = async () => {
     if (!meal.trim()) return;
     setLoading("Analyzing meal...");
-    const profile = storage.getProfile();
+    const profile = await api.getProfile();
     try {
-      const res = await analyzeMeal(meal, profile?.diabetesType ?? "Type 2");
+      const res = await api.analyzeMeal(meal, profile?.diabetesType ?? "Type 2");
       setResult(res);
-      const today = storage.getToday();
+      const today = await api.getToday();
       today.meals.push({
         id: crypto.randomUUID(),
         time,
@@ -84,13 +86,13 @@ function LogPage() {
         indianInsight: res.indian_insight,
         xpEarned: res.xp_earned,
       });
-      storage.saveDay(today);
-      const r = grantXP(XP_REWARDS.meal_log, profile?.class);
-      unlockAchievement("first_blood");
+      await api.saveDay(today);
+      const { result: xp } = await api.grantXP(XP_REWARDS.meal_log, profile?.class);
+      await api.unlockAchievement("first_blood");
       if (/millet|ragi|jowar/i.test(res.indian_insight) && /millet|ragi|jowar/i.test(meal)) {
-        unlockAchievement("millet_convert");
+        await api.unlockAchievement("millet_convert");
       }
-      if (r.leveledUp && r.newLevelTitle) setLevelUp(r.newLevelTitle);
+      if (xp.leveledUp && xp.newLevelTitle) setLevelUp(xp.newLevelTitle);
       toast.success(`+${res.xp_earned} XP — meal logged`);
     } catch {
       toast.error("Analysis failed");
@@ -105,16 +107,15 @@ function LogPage() {
 
   return (
     <AppShell>
-      {loading && <HeartLoading message={loading} />}
+      <HeartLoading active={!!loading} message={loading ?? undefined} minDuration={280} />
       {levelUp && <LevelUpOverlay title={levelUp} onDone={() => setLevelUp(null)} />}
       <div className="max-w-2xl mx-auto p-4 md:p-8">
         <h1 className="font-display text-lg">LOG A MEAL</h1>
-        <p className="text-sm text-slate-400 mt-2">Type what you ate in plain English.</p>
+        <p className="text-sm text-[var(--theme-muted)] mt-2">Type what you ate in plain English.</p>
 
-        {/* Prescription card */}
-        <section className="mt-6 rounded-2xl border border-cyan-700 bg-slate-700 p-5">
-          <p className="font-display text-[10px] text-cyan-400">📋 UPLOAD PRESCRIPTION</p>
-          <p className="text-sm text-slate-400 mt-2">
+        <section className="mt-6 rounded-2xl border border-[var(--theme-cyan)] bg-[var(--theme-card-alt)] p-5">
+          <p className="font-display text-[10px] text-[var(--theme-cyan)]">📋 UPLOAD PRESCRIPTION</p>
+          <p className="text-sm text-[var(--theme-muted)] mt-2">
             Upload your doctor's prescription — we'll extract your medications and explain each one
             in plain language.
           </p>
@@ -122,10 +123,10 @@ function LogPage() {
           {!image ? (
             <button
               onClick={() => fileRef.current?.click()}
-              className="mt-4 w-full rounded-xl border-2 border-dashed border-slate-600 bg-slate-800 p-8 text-center hover:border-cyan-500 transition-colors"
+              className="mt-4 w-full rounded-xl border-2 border-dashed border-[var(--theme-border)] bg-[var(--theme-card)] p-8 text-center hover:border-[var(--theme-cyan)] transition-colors"
             >
-              <Camera className="mx-auto text-slate-400" size={40} />
-              <p className="mt-3 text-slate-400">Tap to upload or take photo</p>
+              <Camera className="mx-auto text-[var(--theme-muted)]" size={40} />
+              <p className="mt-3 text-[var(--theme-muted)]">Tap to upload or take photo</p>
             </button>
           ) : (
             <div className="mt-4 relative inline-block">
@@ -152,36 +153,38 @@ function LogPage() {
           <button
             disabled={!image}
             onClick={analyzeRx}
-            className="mt-4 w-full rounded-full bg-cyan-600 px-6 py-3 font-display text-[10px] text-white hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-40"
+            className="mt-4 w-full rounded-full bg-[var(--theme-cyan)] px-6 py-3 font-display text-[10px] text-white hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-40"
           >
             ANALYZE PRESCRIPTION → +40 XP
           </button>
 
           {rxResult && (
             <div className="mt-5 space-y-3 animate-slide-up">
-              <p className="font-display text-[10px] text-cyan-400">PRESCRIPTION DECODED</p>
+              <p className="font-display text-[10px] text-[var(--theme-cyan)]">PRESCRIPTION DECODED</p>
               {rxResult.meds.map((m, i) => (
                 <div
                   key={i}
-                  className="rounded-xl bg-slate-800 border border-slate-600 p-4 space-y-2"
+                  className="rounded-xl bg-[var(--theme-card)] border border-[var(--theme-border)] p-4 space-y-2"
                 >
                   <p className="font-display text-[10px]">{m.name}</p>
-                  <p className="text-sm text-slate-300">
-                    <span className="text-slate-500">What it does:</span> {m.whatItDoes}
+                  <p className="text-sm text-[var(--theme-muted)]">
+                    <span className="text-[var(--theme-muted)]">What it does:</span> {m.whatItDoes}
                   </p>
-                  <p className="text-sm text-slate-300">
-                    <span className="text-slate-500">Why you take it:</span> {m.whyYouTakeIt}
+                  <p className="text-sm text-[var(--theme-muted)]">
+                    <span className="text-[var(--theme-muted)]">Why you take it:</span>{" "}
+                    {m.whyYouTakeIt}
                   </p>
                   <p className="text-sm text-amber-300">
-                    <span className="text-slate-500">Watch for:</span> {m.sideEffects}
+                    <span className="text-[var(--theme-muted)]">Watch for:</span> {m.sideEffects}
                   </p>
-                  <p className="text-sm text-slate-400">
-                    <span className="text-slate-500">If you miss a dose:</span> {m.ifYouMissDose}
+                  <p className="text-sm text-[var(--theme-muted)]">
+                    <span className="text-[var(--theme-muted)]">If you miss a dose:</span>{" "}
+                    {m.ifYouMissDose}
                   </p>
                 </div>
               ))}
               {rxResult.notes && (
-                <p className="text-xs text-slate-400 italic">📝 {rxResult.notes}</p>
+                <p className="text-xs text-[var(--theme-muted)] italic">📝 {rxResult.notes}</p>
               )}
               <button
                 onClick={saveMeds}
@@ -193,21 +196,20 @@ function LogPage() {
           )}
         </section>
 
-        <div className="my-6 flex items-center gap-3 text-slate-500 text-sm">
-          <div className="h-px flex-1 bg-slate-700" /> OR LOG A MEAL{" "}
-          <div className="h-px flex-1 bg-slate-700" />
+        <div className="my-6 flex items-center gap-3 text-[var(--theme-muted)] text-sm">
+          <div className="h-px flex-1 bg-[var(--theme-border)]" /> OR LOG A MEAL{" "}
+          <div className="h-px flex-1 bg-[var(--theme-border)]" />
         </div>
 
-        {/* Meal input */}
-        <section className="rounded-2xl border border-slate-700 bg-slate-800 p-5">
+        <section className="rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] p-5">
           <div className="relative">
             <textarea
               value={meal}
               onChange={(e) => setMeal(e.target.value.slice(0, 500))}
               placeholder="e.g. ate two rotis with dal tadka and a small bowl of curd for lunch"
-              className="w-full min-h-36 rounded-xl border border-slate-600 bg-slate-900 p-4 text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full min-h-36 rounded-xl border border-[var(--theme-border)] bg-[var(--theme-bg)] p-4 text-[var(--theme-fg)] focus:ring-2 focus:ring-[var(--theme-primary)] outline-none"
             />
-            <span className="absolute bottom-3 right-3 text-xs text-slate-500">
+            <span className="absolute bottom-3 right-3 text-xs text-[var(--theme-muted)]">
               {meal.length} / 500
             </span>
           </div>
@@ -217,7 +219,7 @@ function LogPage() {
               <button
                 key={t}
                 onClick={() => setType(t)}
-                className={`rounded-full border px-4 py-2 text-sm transition-all ${type === t ? "border-blue-500 bg-blue-600 text-white" : "border-slate-600 text-slate-300"}`}
+                className={`rounded-full border px-4 py-2 text-sm transition-all ${type === t ? "border-[var(--theme-primary)] bg-[var(--theme-primary)] text-white" : "border-[var(--theme-border)] text-[var(--theme-muted)]"}`}
               >
                 {t}
               </button>
@@ -225,26 +227,26 @@ function LogPage() {
           </div>
 
           <div className="mt-4">
-            <label className="font-display text-[8px] text-slate-400">TIME</label>
+            <label className="font-display text-[8px] text-[var(--theme-muted)]">TIME</label>
             <input
               type="time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
-              className="mt-1 rounded-xl bg-slate-900 border border-slate-600 px-3 py-2 text-slate-100"
+              className="mt-1 rounded-xl bg-[var(--theme-bg)] border border-[var(--theme-border)] px-3 py-2 text-[var(--theme-fg)]"
             />
           </div>
 
           <button
             disabled={!meal.trim()}
             onClick={submitMeal}
-            className="mt-5 w-full rounded-full bg-amber-500 px-6 py-3 font-display text-[10px] text-slate-900 font-bold hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-40"
+            className="mt-5 w-full rounded-full bg-[var(--theme-accent)] px-6 py-3 font-display text-[10px] text-slate-900 font-bold hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-40"
           >
             ANALYZE MEAL → +30 XP
           </button>
         </section>
 
         {result && (
-          <section className="mt-5 rounded-2xl bg-slate-700 p-6 animate-slide-up">
+          <section className="mt-5 rounded-2xl bg-[var(--theme-card-alt)] p-6 animate-slide-up">
             <div className="flex items-center justify-between mb-3 gap-3">
               <h3 className="font-display text-xs">{result.meal_name}</h3>
               <span
@@ -253,21 +255,21 @@ function LogPage() {
                 {flagText(result.glycemic_level)}
               </span>
             </div>
-            <p className="text-sm text-slate-300">{result.explanation}</p>
-            <p className="mt-3 text-sm text-cyan-300">💡 {result.indian_insight}</p>
+            <p className="text-sm text-[var(--theme-muted)]">{result.explanation}</p>
+            <p className="mt-3 text-sm text-[var(--theme-cyan)]">💡 {result.indian_insight}</p>
             <div className="mt-5 flex gap-3">
               <button
                 onClick={() => {
                   setResult(null);
                   setMeal("");
                 }}
-                className="flex-1 rounded-full bg-blue-600 px-4 py-3 font-display text-[10px] text-white"
+                className="flex-1 rounded-full bg-[var(--theme-primary)] px-4 py-3 font-display text-[10px] text-white"
               >
                 LOG ANOTHER
               </button>
               <button
                 onClick={() => navigate({ to: "/dashboard" })}
-                className="flex-1 rounded-full bg-slate-600 px-4 py-3 font-display text-[10px] text-white"
+                className="flex-1 rounded-full bg-[var(--theme-border)] px-4 py-3 font-display text-[10px] text-white"
               >
                 BACK TO DASHBOARD
               </button>

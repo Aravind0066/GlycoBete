@@ -3,6 +3,8 @@ import { Outlet, createRootRouteWithContext, HeadContent, Scripts } from "@tanst
 import { type ReactNode } from "react";
 import { Toaster } from "sonner";
 
+import { ThemeProvider } from "@/components/ThemeProvider";
+
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -73,7 +75,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="midnight">
       <head>
         <HeadContent />
       </head>
@@ -89,8 +91,10 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <Toaster theme="dark" position="top-center" />
+      <ThemeProvider>
+        <Outlet />
+        <Toaster theme="dark" position="top-center" />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

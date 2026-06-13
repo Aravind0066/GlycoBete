@@ -1,3 +1,13 @@
+export type AppTheme = "midnight" | "forest" | "sunrise" | "ocean";
+
+export interface EmergencyInfo {
+  emergencyContact: string;
+  emergencyPhone: string;
+  doctorName: string;
+  doctorPhone: string;
+  bloodGroup: string;
+}
+
 export interface UserProfile {
   name: string;
   mode: "patient" | "family";
@@ -6,6 +16,49 @@ export interface UserProfile {
   gender: string;
   diabetesType: string;
   medications: string;
+  theme: AppTheme;
+  emergencyContact: string;
+  emergencyPhone: string;
+  doctorName: string;
+  doctorPhone: string;
+  bloodGroup: string;
+}
+
+export interface HealthMetrics {
+  currentGlucose: number | null;
+  weeklyAverage: number | null;
+  highestReading: number | null;
+  lowestReading: number | null;
+  hba1cEstimate: number | null;
+  daysInRange: number;
+  totalDays: number;
+  mealsLogged: number;
+  medicationAdherence: number;
+  exerciseMinutes: number;
+  waterGlasses: number;
+  healthScore: number;
+  glucoseTrend: "improving" | "stable" | "worsening";
+  monthImprovement: number;
+}
+
+export interface RiskPrediction {
+  hypoglycemiaRisk: "low" | "medium" | "high";
+  hyperglycemiaRisk: "low" | "medium" | "high";
+  summary: string;
+  factors: string[];
+}
+
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+  timestamp: string;
+}
+
+export interface DietRecommendation {
+  breakfast: string;
+  lunch: string;
+  dinner: string;
+  tips: string[];
 }
 
 export interface MealLog {

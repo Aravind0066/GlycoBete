@@ -9,16 +9,24 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as SummaryRouteImport } from './routes/summary'
 import { Route as PartyRouteImport } from './routes/party'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as MedsRouteImport } from './routes/meds'
 import { Route as LogRouteImport } from './routes/log'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CheckinRouteImport } from './routes/checkin'
+import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as AchievementsRouteImport } from './routes/achievements'
 import { Route as IndexRouteImport } from './routes/index'
 
+const WelcomeRoute = WelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SummaryRoute = SummaryRouteImport.update({
   id: '/summary',
   path: '/summary',
@@ -32,6 +40,11 @@ const PartyRoute = PartyRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MedsRoute = MedsRouteImport.update({
+  id: '/meds',
+  path: '/meds',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LogRoute = LogRouteImport.update({
@@ -54,6 +67,11 @@ const CheckinRoute = CheckinRouteImport.update({
   path: '/checkin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssistantRoute = AssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AchievementsRoute = AchievementsRouteImport.update({
   id: '/achievements',
   path: '/achievements',
@@ -68,87 +86,115 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/achievements': typeof AchievementsRoute
+  '/assistant': typeof AssistantRoute
   '/checkin': typeof CheckinRoute
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRoute
   '/log': typeof LogRoute
+  '/meds': typeof MedsRoute
   '/onboarding': typeof OnboardingRoute
   '/party': typeof PartyRoute
   '/summary': typeof SummaryRoute
+  '/welcome': typeof WelcomeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/achievements': typeof AchievementsRoute
+  '/assistant': typeof AssistantRoute
   '/checkin': typeof CheckinRoute
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRoute
   '/log': typeof LogRoute
+  '/meds': typeof MedsRoute
   '/onboarding': typeof OnboardingRoute
   '/party': typeof PartyRoute
   '/summary': typeof SummaryRoute
+  '/welcome': typeof WelcomeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/achievements': typeof AchievementsRoute
+  '/assistant': typeof AssistantRoute
   '/checkin': typeof CheckinRoute
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRoute
   '/log': typeof LogRoute
+  '/meds': typeof MedsRoute
   '/onboarding': typeof OnboardingRoute
   '/party': typeof PartyRoute
   '/summary': typeof SummaryRoute
+  '/welcome': typeof WelcomeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/achievements'
+    | '/assistant'
     | '/checkin'
     | '/dashboard'
     | '/insights'
     | '/log'
+    | '/meds'
     | '/onboarding'
     | '/party'
     | '/summary'
+    | '/welcome'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/achievements'
+    | '/assistant'
     | '/checkin'
     | '/dashboard'
     | '/insights'
     | '/log'
+    | '/meds'
     | '/onboarding'
     | '/party'
     | '/summary'
+    | '/welcome'
   id:
     | '__root__'
     | '/'
     | '/achievements'
+    | '/assistant'
     | '/checkin'
     | '/dashboard'
     | '/insights'
     | '/log'
+    | '/meds'
     | '/onboarding'
     | '/party'
     | '/summary'
+    | '/welcome'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AchievementsRoute: typeof AchievementsRoute
+  AssistantRoute: typeof AssistantRoute
   CheckinRoute: typeof CheckinRoute
   DashboardRoute: typeof DashboardRoute
   InsightsRoute: typeof InsightsRoute
   LogRoute: typeof LogRoute
+  MedsRoute: typeof MedsRoute
   OnboardingRoute: typeof OnboardingRoute
   PartyRoute: typeof PartyRoute
   SummaryRoute: typeof SummaryRoute
+  WelcomeRoute: typeof WelcomeRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/welcome': {
+      id: '/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/summary': {
       id: '/summary'
       path: '/summary'
@@ -168,6 +214,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/meds': {
+      id: '/meds'
+      path: '/meds'
+      fullPath: '/meds'
+      preLoaderRoute: typeof MedsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/log': {
@@ -198,6 +251,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckinRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/assistant': {
+      id: '/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AssistantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/achievements': {
       id: '/achievements'
       path: '/achievements'
@@ -218,13 +278,16 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AchievementsRoute: AchievementsRoute,
+  AssistantRoute: AssistantRoute,
   CheckinRoute: CheckinRoute,
   DashboardRoute: DashboardRoute,
   InsightsRoute: InsightsRoute,
   LogRoute: LogRoute,
+  MedsRoute: MedsRoute,
   OnboardingRoute: OnboardingRoute,
   PartyRoute: PartyRoute,
   SummaryRoute: SummaryRoute,
+  WelcomeRoute: WelcomeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

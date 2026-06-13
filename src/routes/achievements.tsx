@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+
 import { AppShell } from "@/components/AppShell";
-import { storage } from "@/lib/gameEngine";
+import { api } from "@/lib/api";
 
 export const Route = createFileRoute("/achievements")({
   head: () => ({ meta: [{ title: "Achievements — GlycoBete" }] }),
@@ -9,32 +10,28 @@ export const Route = createFileRoute("/achievements")({
 });
 
 const BADGES = [
-  { id: "first_blood", icon: "🔥", name: "FIRST BLOOD", desc: "Log your first meal" },
-  { id: "week_warrior", icon: "📅", name: "WEEK WARRIOR", desc: "7-day streak" },
-  { id: "boss_slayer", icon: "🏆", name: "BOSS SLAYER", desc: "Defeat your first weekly boss" },
-  {
-    id: "millet_convert",
-    icon: "🍚",
-    name: "MILLET CONVERT",
-    desc: "Log a millet meal after AI suggestion",
-  },
-  { id: "party_leader", icon: "👨‍👩‍👧", name: "PARTY LEADER", desc: "Add a family member" },
-  { id: "pill_perfect", icon: "💊", name: "PILL PERFECT", desc: "Log meds 7 days in a row" },
-  { id: "data_mage", icon: "📊", name: "DATA MAGE", desc: "Generate your first doctor report" },
-  { id: "night_owl", icon: "🌙", name: "NIGHT OWL", desc: "Log evening summary 7 days running" },
+  { id: "first_blood", name: "FIRST BLOOD", icon: "🍽️", desc: "Logged your first meal" },
+  { id: "week_warrior", name: "WEEK WARRIOR", icon: "🔥", desc: "7-day check-in streak" },
+  { id: "millet_convert", name: "MILLET CONVERT", icon: "🌾", desc: "Logged a millet meal" },
+  { id: "night_owl", name: "NIGHT OWL", icon: "🌙", desc: "Completed evening debrief" },
+  { id: "party_leader", name: "PARTY LEADER", icon: "👥", desc: "Invited a party member" },
+  { id: "data_mage", name: "DATA MAGE", icon: "📊", desc: "Generated doctor report" },
+  { id: "boss_slayer", name: "BOSS SLAYER", icon: "⚔️", desc: "Defeated weekly boss" },
+  { id: "legend", name: "LEGEND", icon: "👑", desc: "Reached level 6" },
 ];
 
 function Achievements() {
   const [unlocked, setUnlocked] = useState<string[]>([]);
+
   useEffect(() => {
-    setUnlocked(storage.getGame().achievements);
+    api.getGame().then((g) => setUnlocked(g.achievements));
   }, []);
 
   return (
     <AppShell>
       <div className="max-w-4xl mx-auto p-4 md:p-8">
         <h1 className="font-display text-lg">ACHIEVEMENTS</h1>
-        <p className="text-sm text-slate-400 mt-2">Your legendary moments.</p>
+        <p className="text-sm text-[var(--theme-muted)] mt-2">Your legendary moments.</p>
 
         <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
           {BADGES.map((b) => {
@@ -44,15 +41,15 @@ function Achievements() {
                 key={b.id}
                 className={`rounded-2xl border p-5 text-center transition-all ${
                   open
-                    ? "border-amber-500 bg-slate-800 shadow-[0_0_20px_rgba(245,158,11,0.3)] animate-flip-unlock"
-                    : "border-slate-700 bg-slate-800 grayscale opacity-60"
+                    ? "border-[var(--theme-accent)] bg-[var(--theme-card)] shadow-[0_0_20px_rgba(245,158,11,0.3)] animate-flip-unlock"
+                    : "border-[var(--theme-border)] bg-[var(--theme-card)] grayscale opacity-60"
                 }`}
               >
                 <div className="text-4xl">{open ? b.icon : "🔒"}</div>
-                <p className="mt-3 font-display text-[9px] text-slate-100">
+                <p className="mt-3 font-display text-[9px] text-[var(--theme-fg)]">
                   {open ? b.name : "???"}
                 </p>
-                <p className="mt-2 text-xs text-slate-400">{open ? b.desc : "Locked"}</p>
+                <p className="mt-2 text-xs text-[var(--theme-muted)]">{open ? b.desc : "Locked"}</p>
               </div>
             );
           })}
