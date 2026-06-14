@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { storage } from "@/lib/gameEngine";
+import { rewardProfileComplete } from "@/lib/rewardEngine";
 import type { UserProfile } from "@/lib/types";
 
 export const Route = createFileRoute("/onboarding")({
@@ -30,6 +31,7 @@ function Onboarding() {
 
   const finish = () => {
     storage.setProfile(profile as UserProfile);
+    rewardProfileComplete();
     navigate({ to: "/dashboard" });
   };
 

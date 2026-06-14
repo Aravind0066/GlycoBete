@@ -15,6 +15,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LogRouteImport } from './routes/log'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CoachRouteImport } from './routes/coach'
 import { Route as CheckinRouteImport } from './routes/checkin'
 import { Route as AchievementsRouteImport } from './routes/achievements'
 import { Route as IndexRouteImport } from './routes/index'
@@ -49,6 +50,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CoachRoute = CoachRouteImport.update({
+  id: '/coach',
+  path: '/coach',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckinRoute = CheckinRouteImport.update({
   id: '/checkin',
   path: '/checkin',
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/achievements': typeof AchievementsRoute
   '/checkin': typeof CheckinRoute
+  '/coach': typeof CoachRoute
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRoute
   '/log': typeof LogRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/achievements': typeof AchievementsRoute
   '/checkin': typeof CheckinRoute
+  '/coach': typeof CoachRoute
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRoute
   '/log': typeof LogRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/achievements': typeof AchievementsRoute
   '/checkin': typeof CheckinRoute
+  '/coach': typeof CoachRoute
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRoute
   '/log': typeof LogRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/'
     | '/achievements'
     | '/checkin'
+    | '/coach'
     | '/dashboard'
     | '/insights'
     | '/log'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/'
     | '/achievements'
     | '/checkin'
+    | '/coach'
     | '/dashboard'
     | '/insights'
     | '/log'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/achievements'
     | '/checkin'
+    | '/coach'
     | '/dashboard'
     | '/insights'
     | '/log'
@@ -139,6 +151,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AchievementsRoute: typeof AchievementsRoute
   CheckinRoute: typeof CheckinRoute
+  CoachRoute: typeof CoachRoute
   DashboardRoute: typeof DashboardRoute
   InsightsRoute: typeof InsightsRoute
   LogRoute: typeof LogRoute
@@ -191,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/coach': {
+      id: '/coach'
+      path: '/coach'
+      fullPath: '/coach'
+      preLoaderRoute: typeof CoachRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkin': {
       id: '/checkin'
       path: '/checkin'
@@ -219,6 +239,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AchievementsRoute: AchievementsRoute,
   CheckinRoute: CheckinRoute,
+  CoachRoute: CoachRoute,
   DashboardRoute: DashboardRoute,
   InsightsRoute: InsightsRoute,
   LogRoute: LogRoute,

@@ -1,11 +1,12 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, Utensils, BarChart3, Users, Trophy } from "lucide-react";
+import { Home, Utensils, BarChart3, Users, Trophy, Bot } from "lucide-react";
 import { storage, levelFromXP } from "@/lib/gameEngine";
 import { useEffect, useState, type ReactNode } from "react";
 
 const NAV = [
   { to: "/dashboard", icon: Home, label: "HOME" },
   { to: "/log", icon: Utensils, label: "LOG" },
+  { to: "/coach", icon: Bot, label: "AI" },
   { to: "/insights", icon: BarChart3, label: "STATS" },
   { to: "/party", icon: Users, label: "PARTY" },
   { to: "/achievements", icon: Trophy, label: "WINS" },
@@ -76,7 +77,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-slate-700 bg-slate-900">
-        <div className="grid grid-cols-5">
+        <div className="grid grid-cols-6">
           {NAV.map((n) => {
             const active = loc.pathname === n.to;
             const Icon = n.icon;
