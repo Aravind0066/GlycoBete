@@ -2,8 +2,17 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { HeartLoading } from "@/components/HeartLoading";
-import { storage, levelFromXP, bossProgress, checkBossWeek } from "@/lib/gameEngine";
-import { Flame, Coins, Check } from "lucide-react";
+import {
+  storage,
+  levelFromXP,
+  bossProgress,
+  checkBossWeek,
+  hydrateFromBackend,
+} from "@/lib/gameEngine";
+import { getDashboardMetrics } from "@/lib/glycoBeteMetrics";
+import { syncQuestsFromDayState } from "@/lib/questEngine";
+import { Activity, Award, Bot, Check, Coins, Flame, Target } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — GlycoBete" }] }),
@@ -17,16 +26,60 @@ const CLASS_BORDER = {
   healer: "border-green-500",
 } as const;
 
+const TONE_STYLE = {
+  good: "border-green-600 bg-green-950/60 text-green-300",
+  watch: "border-amber-600 bg-amber-950/60 text-amber-300",
+  alert: "border-red-600 bg-red-950/60 text-red-300",
+} as const;
+
 function Dashboard() {
   const navigate = useNavigate();
-  const [tick, setTick] = useState(0);
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    if (!storage.getProfile()) navigate({ to: "/onboarding" });
-    checkBossWeek();
-    setTick(1);
+    (async () => {
+      try {
+        await hydrateFromBackend();
+        if (!storage.getProfile()) {
+          navigate({ to: "/onboarding" });
+          return;
+        }
+        checkBossWeek();
+        syncQuestsFromDayState();
+        setReady(true);
+      } catch (err) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Could not load dashboard from the backend.";
+        setError(message);
+        toast.error(message);
+      }
+    })();
   }, [navigate]);
 
-  if (!tick) return <HeartLoading message="Loading your dashboard..." />;
+  if (error) {
+    return (
+      <AppShell>
+        <div className="mx-auto max-w-lg p-8 text-center">
+          <p className="text-red-300">{error}</p>
+          <p className="mt-4 text-sm text-slate-400">
+            Run <code className="text-amber-400">npm run dev:full</code> to start both frontend and
+            backend.
+          </p>
+          <Link
+            to="/login"
+            className="mt-6 inline-flex rounded-full bg-amber-500 px-6 py-3 font-display text-xs text-slate-900"
+          >
+            BACK TO LOGIN
+          </Link>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (!ready) return <HeartLoading message="Loading your dashboard..." />;
   const profile = storage.getProfile();
   if (!profile) return <HeartLoading message="Preparing onboarding..." />;
   const game = storage.getGame();
@@ -38,6 +91,7 @@ function Dashboard() {
   const today = storage.getToday();
   const boss = bossProgress();
   const bossPct = (boss.inRange / boss.total) * 100;
+  const metrics = getDashboardMetrics();
 
   const lastMeal = today.meals[today.meals.length - 1];
   const flag = (l: string) => (l === "low" ? "🟢 LOW" : l === "high" ? "🔴 HIGH" : "🟡 MEDIUM");
@@ -100,12 +154,76 @@ function Dashboard() {
           )}
         </section>
 
+        {/* GlycoBete health dashboard */}
+        <section className="grid gap-4 lg:grid-cols-[1.1fr_1fr_1fr]">
+          <div className={`rounded-2xl border p-5 ${TONE_STYLE[metrics.scoreTone]}`}>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="font-display text-[9px]">HEALTH SCORE</p>
+                <p className="mt-3 font-display text-4xl">{metrics.healthScore}</p>
+                <p className="mt-2 text-sm text-slate-300">{metrics.scoreLabel}</p>
+              </div>
+              <Activity size={42} className="shrink-0 opacity-80" />
+            </div>
+            <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-900/70">
+              <div
+                className="h-full rounded-full bg-current transition-all duration-700"
+                style={{ width: `${metrics.healthScore}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-cyan-700 bg-slate-800 p-5">
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-display text-[9px] text-cyan-400">DAILY QUESTS</p>
+              <Target size={20} className="text-cyan-400" />
+            </div>
+            <p className="mt-3 font-display text-2xl text-slate-100">
+              {metrics.questProgress.completed}/{metrics.questProgress.total}
+            </p>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-700">
+              <div
+                className="h-full bg-cyan-400 transition-all duration-700"
+                style={{ width: `${metrics.questProgress.percent}%` }}
+              />
+            </div>
+            <div className="mt-4 space-y-2">
+              {metrics.questProgress.items.slice(0, 3).map((quest) => (
+                <div key={quest.label} className="flex items-center justify-between gap-3 text-xs">
+                  <span className={quest.done ? "text-slate-200" : "text-slate-500"}>
+                    {quest.label}
+                  </span>
+                  <span className={quest.done ? "text-green-400" : "text-amber-400"}>
+                    {quest.done ? "Done" : `+${quest.xp} XP`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-blue-700 bg-slate-800 p-5">
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-display text-[9px] text-blue-400">AI COACH</p>
+              <Bot size={22} className="text-blue-400" />
+            </div>
+            <p className="mt-3 text-sm text-slate-300">
+              Ask about food choices, exercise, glucose readings, or what today's pattern means.
+            </p>
+            <Link
+              to="/coach"
+              className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-blue-600 px-4 py-3 font-display text-[10px] text-white transition-all hover:scale-[1.02] active:scale-95"
+            >
+              OPEN AI COACH
+            </Link>
+          </div>
+        </section>
+
         {/* Active Quest */}
-        {game.activeQuest && (
+        {metrics.questProgress.activeDailyQuest && (
           <section className="rounded-2xl border border-cyan-700 bg-slate-700 p-4">
-            <p className="font-display text-[8px] text-cyan-400 mb-2">📜 TODAY'S QUEST</p>
-            <p className="text-sm text-slate-200">{game.activeQuest}</p>
-            <p className="text-xs text-amber-400 mt-2">COMPLETE FOR +100 XP</p>
+            <p className="font-display text-[8px] text-cyan-400 mb-2">TODAY'S QUEST</p>
+            <p className="text-sm text-slate-200">{metrics.questProgress.activeDailyQuest}</p>
+            <p className="text-xs text-amber-400 mt-2">COMPLETE DAILY QUESTS FOR BONUS XP</p>
           </section>
         )}
 
@@ -166,6 +284,69 @@ function Dashboard() {
           </StatusCard>
         </section>
 
+        <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="rounded-2xl border border-slate-700 bg-slate-800 p-5">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <p className="font-display text-[10px] text-slate-300">RECENT LOGS</p>
+              <Link to="/log" className="text-xs text-amber-400 underline-offset-4 hover:underline">
+                Add log
+              </Link>
+            </div>
+            {metrics.recentLogs.length ? (
+              <div className="space-y-3">
+                {metrics.recentLogs.map((log) => (
+                  <div
+                    key={log.id}
+                    className={`flex items-start gap-3 rounded-xl border p-3 ${TONE_STYLE[log.tone]}`}
+                  >
+                    <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-current" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-slate-100">{log.label}</p>
+                      <p className="mt-1 truncate text-xs text-slate-300">{log.detail}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-slate-600 p-6 text-center">
+                <p className="text-sm text-slate-400">No logs yet today.</p>
+                <Link
+                  to="/checkin"
+                  className="mt-3 inline-flex rounded-full bg-blue-600 px-4 py-2 font-display text-[9px] text-white"
+                >
+                  START CHECK-IN
+                </Link>
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-2xl border border-slate-700 bg-slate-800 p-5">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <p className="font-display text-[10px] text-slate-300">WEEKLY SUMMARY</p>
+              <Award size={18} className="text-amber-400" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <MiniStat
+                label="Avg fasting"
+                value={
+                  metrics.weeklySummary.averageFasting
+                    ? `${metrics.weeklySummary.averageFasting}`
+                    : "-"
+                }
+              />
+              <MiniStat label="In range" value={`${metrics.weeklySummary.daysInRange}/7`} />
+              <MiniStat label="Check-ins" value={`${metrics.weeklySummary.checkins}`} />
+              <MiniStat label="Meals" value={`${metrics.weeklySummary.mealsLogged}`} />
+            </div>
+            <Link
+              to="/achievements"
+              className="mt-4 flex items-center justify-center gap-2 rounded-full bg-slate-700 px-4 py-3 font-display text-[10px] text-amber-400 transition-all hover:bg-slate-600"
+            >
+              <Award size={14} /> VIEW ACHIEVEMENTS
+            </Link>
+          </div>
+        </section>
+
         {/* Boss */}
         <section
           className={`rounded-2xl border-2 p-6 ${boss.defeated ? "bg-amber-950 border-amber-500" : "bg-red-950 border-red-600 animate-boss-pulse"}`}
@@ -206,5 +387,14 @@ function Dashboard() {
 function StatusCard({ children }: { children: React.ReactNode }) {
   return (
     <div className="rounded-2xl border border-slate-700 bg-slate-800 p-5 shadow-lg">{children}</div>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-slate-700 bg-slate-900 p-3 text-center">
+      <p className="font-display text-xl text-amber-400">{value}</p>
+      <p className="mt-2 text-xs text-slate-400">{label}</p>
+    </div>
   );
 }

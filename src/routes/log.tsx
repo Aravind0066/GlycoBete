@@ -3,7 +3,8 @@ import { useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { HeartLoading } from "@/components/HeartLoading";
 import { LevelUpOverlay } from "@/components/LevelUpOverlay";
-import { storage, grantXP, XP_REWARDS, unlockAchievement } from "@/lib/gameEngine";
+import { storage } from "@/lib/gameEngine";
+import { rewardMealLog, rewardPrescriptionUpload, unlockAchievementWithAlias } from "@/lib/rewardEngine";
 import { analyzeMeal, readPrescription, type MealAnalysis } from "@/lib/geminiApi";
 import type { PrescriptionMed } from "@/lib/types";
 import { toast } from "sonner";
@@ -50,7 +51,7 @@ function LogPage() {
     try {
       const res = await readPrescription(image.data, image.mime);
       setRxResult({ meds: res.medications, notes: res.doctor_notes });
-      const r = grantXP(XP_REWARDS.prescription_upload);
+      const r = rewardPrescriptionUpload();
       if (r.leveledUp && r.newLevelTitle) setLevelUp(r.newLevelTitle);
       toast.success("+40 XP — Prescription decoded");
     } catch {
@@ -85,10 +86,9 @@ function LogPage() {
         xpEarned: res.xp_earned,
       });
       storage.saveDay(today);
-      const r = grantXP(XP_REWARDS.meal_log, profile?.class);
-      unlockAchievement("first_blood");
+      const r = rewardMealLog(profile?.class);
       if (/millet|ragi|jowar/i.test(res.indian_insight) && /millet|ragi|jowar/i.test(meal)) {
-        unlockAchievement("millet_convert");
+        unlockAchievementWithAlias("millet_convert");
       }
       if (r.leveledUp && r.newLevelTitle) setLevelUp(r.newLevelTitle);
       toast.success(`+${res.xp_earned} XP — meal logged`);

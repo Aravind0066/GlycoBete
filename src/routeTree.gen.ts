@@ -12,9 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SummaryRouteImport } from './routes/summary'
 import { Route as PartyRouteImport } from './routes/party'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as LogRouteImport } from './routes/log'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CoachRouteImport } from './routes/coach'
 import { Route as CheckinRouteImport } from './routes/checkin'
 import { Route as AchievementsRouteImport } from './routes/achievements'
 import { Route as IndexRouteImport } from './routes/index'
@@ -34,6 +36,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LogRoute = LogRouteImport.update({
   id: '/log',
   path: '/log',
@@ -47,6 +54,11 @@ const InsightsRoute = InsightsRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoachRoute = CoachRouteImport.update({
+  id: '/coach',
+  path: '/coach',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckinRoute = CheckinRouteImport.update({
@@ -69,9 +81,11 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/achievements': typeof AchievementsRoute
   '/checkin': typeof CheckinRoute
+  '/coach': typeof CoachRoute
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRoute
   '/log': typeof LogRoute
+  '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/party': typeof PartyRoute
   '/summary': typeof SummaryRoute
@@ -80,9 +94,11 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/achievements': typeof AchievementsRoute
   '/checkin': typeof CheckinRoute
+  '/coach': typeof CoachRoute
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRoute
   '/log': typeof LogRoute
+  '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/party': typeof PartyRoute
   '/summary': typeof SummaryRoute
@@ -92,9 +108,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/achievements': typeof AchievementsRoute
   '/checkin': typeof CheckinRoute
+  '/coach': typeof CoachRoute
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRoute
   '/log': typeof LogRoute
+  '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/party': typeof PartyRoute
   '/summary': typeof SummaryRoute
@@ -105,9 +123,11 @@ export interface FileRouteTypes {
     | '/'
     | '/achievements'
     | '/checkin'
+    | '/coach'
     | '/dashboard'
     | '/insights'
     | '/log'
+    | '/login'
     | '/onboarding'
     | '/party'
     | '/summary'
@@ -116,9 +136,11 @@ export interface FileRouteTypes {
     | '/'
     | '/achievements'
     | '/checkin'
+    | '/coach'
     | '/dashboard'
     | '/insights'
     | '/log'
+    | '/login'
     | '/onboarding'
     | '/party'
     | '/summary'
@@ -127,9 +149,11 @@ export interface FileRouteTypes {
     | '/'
     | '/achievements'
     | '/checkin'
+    | '/coach'
     | '/dashboard'
     | '/insights'
     | '/log'
+    | '/login'
     | '/onboarding'
     | '/party'
     | '/summary'
@@ -139,9 +163,11 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AchievementsRoute: typeof AchievementsRoute
   CheckinRoute: typeof CheckinRoute
+  CoachRoute: typeof CoachRoute
   DashboardRoute: typeof DashboardRoute
   InsightsRoute: typeof InsightsRoute
   LogRoute: typeof LogRoute
+  LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   PartyRoute: typeof PartyRoute
   SummaryRoute: typeof SummaryRoute
@@ -170,6 +196,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/log': {
       id: '/log'
       path: '/log'
@@ -189,6 +222,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/coach': {
+      id: '/coach'
+      path: '/coach'
+      fullPath: '/coach'
+      preLoaderRoute: typeof CoachRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkin': {
@@ -219,9 +259,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AchievementsRoute: AchievementsRoute,
   CheckinRoute: CheckinRoute,
+  CoachRoute: CoachRoute,
   DashboardRoute: DashboardRoute,
   InsightsRoute: InsightsRoute,
   LogRoute: LogRoute,
+  LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   PartyRoute: PartyRoute,
   SummaryRoute: SummaryRoute,

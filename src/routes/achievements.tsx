@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { storage } from "@/lib/gameEngine";
+import { normalizeAchievementId } from "@/lib/rewardEngine";
 
 export const Route = createFileRoute("/achievements")({
   head: () => ({ meta: [{ title: "Achievements — GlycoBete" }] }),
@@ -9,8 +10,11 @@ export const Route = createFileRoute("/achievements")({
 });
 
 const BADGES = [
-  { id: "first_blood", icon: "🔥", name: "FIRST BLOOD", desc: "Log your first meal" },
-  { id: "week_warrior", icon: "📅", name: "WEEK WARRIOR", desc: "7-day streak" },
+  { id: "first_glucose_log", icon: "🩸", name: "FIRST CHECK-IN", desc: "Log your first glucose reading" },
+  { id: "profile_complete", icon: "✅", name: "PROFILE READY", desc: "Complete your health profile" },
+  { id: "seven_day_streak", icon: "🔥", name: "7 DAY STREAK", desc: "Check in for seven days straight" },
+  { id: "meal_tracker", icon: "🍽️", name: "MEAL TRACKER", desc: "Log your first AI-analyzed meal" },
+  { id: "coach_chat", icon: "💬", name: "COACH CONNECTION", desc: "Ask the AI coach a question" },
   { id: "boss_slayer", icon: "🏆", name: "BOSS SLAYER", desc: "Defeat your first weekly boss" },
   {
     id: "millet_convert",
@@ -19,10 +23,13 @@ const BADGES = [
     desc: "Log a millet meal after AI suggestion",
   },
   { id: "party_leader", icon: "👨‍👩‍👧", name: "PARTY LEADER", desc: "Add a family member" },
-  { id: "pill_perfect", icon: "💊", name: "PILL PERFECT", desc: "Log meds 7 days in a row" },
   { id: "data_mage", icon: "📊", name: "DATA MAGE", desc: "Generate your first doctor report" },
-  { id: "night_owl", icon: "🌙", name: "NIGHT OWL", desc: "Log evening summary 7 days running" },
+  { id: "night_owl", icon: "🌙", name: "NIGHT OWL", desc: "Complete your evening debrief" },
 ];
+
+function hasBadge(unlocked: string[], badgeId: string) {
+  return unlocked.some((id) => normalizeAchievementId(id) === badgeId || id === badgeId);
+}
 
 function Achievements() {
   const [unlocked, setUnlocked] = useState<string[]>([]);
@@ -38,7 +45,7 @@ function Achievements() {
 
         <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
           {BADGES.map((b) => {
-            const open = unlocked.includes(b.id);
+            const open = hasBadge(unlocked, b.id);
             return (
               <div
                 key={b.id}

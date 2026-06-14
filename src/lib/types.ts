@@ -49,6 +49,19 @@ export interface GameState {
   activeQuest: string | null;
 }
 
+export interface QuestRecord {
+  id: string;
+  title: string;
+  description: string;
+  questType: "daily" | "weekly";
+  action: string;
+  targetCount: number;
+  progressCount: number;
+  xpReward: number;
+  dueDate: string;
+  completedAt: string | null;
+}
+
 export interface PartyMember {
   id: string;
   name: string;
