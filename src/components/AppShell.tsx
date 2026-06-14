@@ -1,6 +1,8 @@
-import { Link, useLocation } from "@tanstack/react-router";
-import { Home, Utensils, BarChart3, Users, Trophy, Bot } from "lucide-react";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { Home, Utensils, BarChart3, Users, Trophy, Bot, LogOut } from "lucide-react";
 import { storage, levelFromXP } from "@/lib/gameEngine";
+import { clearAuthSession, getAuthSession } from "@/lib/authService";
+import { getProfileDisplayName } from "@/lib/profileUtils";
 import { useEffect, useState, type ReactNode } from "react";
 
 const NAV = [
@@ -16,6 +18,7 @@ const CLASS_ICON = { warrior: "🗡️", mage: "🔮", healer: "💚" } as const
 
 export function AppShell({ children }: { children: ReactNode }) {
   const loc = useLocation();
+  const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -40,7 +43,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               {profile ? CLASS_ICON[profile.class as keyof typeof CLASS_ICON] : "❤️"}
             </div>
             <div className="min-w-0">
-              <div className="font-display text-[10px] truncate">{profile?.name || "PLAYER"}</div>
+              <div className="font-display text-[10px] truncate">
+                {profile ? getProfileDisplayName(profile) : "PLAYER"}
+              </div>
               <div className="font-display text-[8px] text-amber-400 mt-1">
                 LVL {lvl?.level ?? 1} {lvl?.title ?? "ROOKIE"}
               </div>
@@ -71,6 +76,18 @@ export function AppShell({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
+        {getAuthSession() && (
+          <button
+            type="button"
+            onClick={() => {
+              clearAuthSession();
+              navigate({ to: "/auth" });
+            }}
+            className="mt-auto flex items-center gap-2 rounded-xl px-3 py-3 text-sm text-slate-500 transition-all hover:bg-slate-800 hover:text-slate-300"
+          >
+            <LogOut size={16} /> Sign out
+          </button>
+        )}
       </aside>
 
       <main className="md:ml-60 pb-24 md:pb-8">{children}</main>

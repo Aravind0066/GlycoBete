@@ -53,6 +53,7 @@ Rules:
     return { ...fallback, ...parseJsonResponse(text, fallback), source: "grok" };
   } catch (error) {
     if (error instanceof GrokNotConfiguredError) return fallback;
-    throw error;
+    console.error("Health insight agent failed:", error.message);
+    return fallback;
   }
 }

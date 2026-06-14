@@ -85,7 +85,14 @@ type Med = {
 };
 
 export const storage = {
-  getProfile: (): UserProfile | null => read<UserProfile | null>(KEYS.profile, null),
+  getProfile: (): UserProfile | null => {
+    const existing = read<UserProfile | null>(KEYS.profile, null);
+    if (!existing) return null;
+    if (!existing.dateOfBirth && existing.age) {
+      return { ...existing, dateOfBirth: existing.dateOfBirth ?? "" };
+    }
+    return existing;
+  },
   setProfile: (p: UserProfile) => write(KEYS.profile, p),
 
   getGame: (): GameState => {

@@ -4,6 +4,7 @@ import { answerDiabetesCoach } from "../ai/diabetesCoachAgent.js";
 import { analyzeMeal } from "../ai/mealAnalysisAgent.js";
 import { generateHealthInsights } from "../ai/healthInsightAgent.js";
 import { generateDailyDebrief } from "../ai/dailyDebriefAgent.js";
+import { extractMedications } from "../ai/medicationExtractAgent.js";
 
 const riskAssessmentSchema = z.object({
   age: z.number().int().min(1).max(120),
@@ -58,6 +59,13 @@ const dailyDebriefSchema = z.object({
     .default([]),
   symptoms: z.array(z.string()).default([]),
   medsTaken: z.boolean(),
+});
+
+const medicationExtractSchema = z.object({
+  image: z.object({
+    base64: z.string().min(1),
+    mimeType: z.enum(["image/jpeg", "image/jpg", "image/png"]),
+  }),
 });
 
 function validate(schema, body, res) {
@@ -119,6 +127,16 @@ export function registerAiRoutes(app) {
     if (!input) return;
     try {
       res.json({ data: await generateDailyDebrief(input) });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/ai/extract-medications", async (req, res, next) => {
+    const input = validate(medicationExtractSchema, req.body, res);
+    if (!input) return;
+    try {
+      res.json({ data: await extractMedications(input) });
     } catch (error) {
       next(error);
     }

@@ -46,6 +46,7 @@ Rules:
     return { ...fallback, ...parseJsonResponse(text, fallback), source: "grok" };
   } catch (error) {
     if (error instanceof GrokNotConfiguredError) return fallback;
-    throw error;
+    console.error("Risk agent failed:", error.message);
+    return fallback;
   }
 }

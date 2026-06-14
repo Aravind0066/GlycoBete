@@ -17,8 +17,10 @@ import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CoachRouteImport } from './routes/coach'
 import { Route as CheckinRouteImport } from './routes/checkin'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AchievementsRouteImport } from './routes/achievements'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 
 const SummaryRoute = SummaryRouteImport.update({
   id: '/summary',
@@ -60,6 +62,11 @@ const CheckinRoute = CheckinRouteImport.update({
   path: '/checkin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AchievementsRoute = AchievementsRouteImport.update({
   id: '/achievements',
   path: '/achievements',
@@ -70,10 +77,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/achievements': typeof AchievementsRoute
+  '/auth': typeof AuthRouteWithChildren
   '/checkin': typeof CheckinRoute
   '/coach': typeof CoachRoute
   '/dashboard': typeof DashboardRoute
@@ -82,10 +95,12 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/party': typeof PartyRoute
   '/summary': typeof SummaryRoute
+  '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/achievements': typeof AchievementsRoute
+  '/auth': typeof AuthRouteWithChildren
   '/checkin': typeof CheckinRoute
   '/coach': typeof CoachRoute
   '/dashboard': typeof DashboardRoute
@@ -94,11 +109,13 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/party': typeof PartyRoute
   '/summary': typeof SummaryRoute
+  '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/achievements': typeof AchievementsRoute
+  '/auth': typeof AuthRouteWithChildren
   '/checkin': typeof CheckinRoute
   '/coach': typeof CoachRoute
   '/dashboard': typeof DashboardRoute
@@ -107,12 +124,14 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/party': typeof PartyRoute
   '/summary': typeof SummaryRoute
+  '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/achievements'
+    | '/auth'
     | '/checkin'
     | '/coach'
     | '/dashboard'
@@ -121,10 +140,12 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/party'
     | '/summary'
+    | '/auth/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/achievements'
+    | '/auth'
     | '/checkin'
     | '/coach'
     | '/dashboard'
@@ -133,10 +154,12 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/party'
     | '/summary'
+    | '/auth/callback'
   id:
     | '__root__'
     | '/'
     | '/achievements'
+    | '/auth'
     | '/checkin'
     | '/coach'
     | '/dashboard'
@@ -145,11 +168,13 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/party'
     | '/summary'
+    | '/auth/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AchievementsRoute: typeof AchievementsRoute
+  AuthRoute: typeof AuthRouteWithChildren
   CheckinRoute: typeof CheckinRoute
   CoachRoute: typeof CoachRoute
   DashboardRoute: typeof DashboardRoute
@@ -218,6 +243,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckinRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/achievements': {
       id: '/achievements'
       path: '/achievements'
@@ -232,12 +264,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
+    }
   }
 }
+
+interface AuthRouteChildren {
+  AuthCallbackRoute: typeof AuthCallbackRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthCallbackRoute: AuthCallbackRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AchievementsRoute: AchievementsRoute,
+  AuthRoute: AuthRouteWithChildren,
   CheckinRoute: CheckinRoute,
   CoachRoute: CoachRoute,
   DashboardRoute: DashboardRoute,

@@ -1,7 +1,11 @@
 export interface UserProfile {
+  email?: string;
   name: string;
+  patientName?: string;
+  caregiverName?: string;
   mode: "patient" | "family";
   class: "warrior" | "mage" | "healer";
+  dateOfBirth: string;
   age: string;
   gender: string;
   diabetesType: string;

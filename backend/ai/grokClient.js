@@ -11,8 +11,12 @@ function getApiKey() {
   return process.env.XAI_API_KEY || process.env.GROK_API_KEY;
 }
 
-function getModel() {
-  return process.env.XAI_MODEL || process.env.GROK_MODEL || "grok-4.3";
+function getTextModel() {
+  return process.env.XAI_MODEL || process.env.GROK_MODEL || "grok-2-1212";
+}
+
+function getVisionModel() {
+  return process.env.XAI_VISION_MODEL || process.env.GROK_VISION_MODEL || "grok-2-vision-1212";
 }
 
 function stripJsonFences(value) {
@@ -41,7 +45,7 @@ export async function callGrokText({ system, user, temperature = 0.25, maxOutput
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: getModel(),
+      model: getTextModel(),
       temperature,
       max_tokens: maxOutputTokens,
       messages: [
@@ -69,37 +73,31 @@ export async function callGrokVision({
   const apiKey = getApiKey();
   if (!apiKey) throw new GrokNotConfiguredError();
 
-  const input = [
-    { role: "system", content: system },
-    {
-      role: "user",
-      content: [
-        ...(image
-          ? [
-              {
-                type: "input_image",
-                image_url: `data:${image.mimeType};base64,${image.base64}`,
-                detail: "high",
-              },
-            ]
-          : []),
-        { type: "input_text", text: prompt },
-      ],
-    },
-  ];
-
-  const response = await fetch(`${XAI_BASE_URL}/responses`, {
+  const response = await fetch(`${XAI_BASE_URL}/chat/completions`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: getModel(),
-      input,
-      store: false,
+      model: getVisionModel(),
       temperature,
-      max_output_tokens: maxOutputTokens,
+      max_tokens: maxOutputTokens,
+      messages: [
+        { role: "system", content: system },
+        {
+          role: "user",
+          content: [
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:${image.mimeType};base64,${image.base64}`,
+              },
+            },
+            { type: "text", text: prompt },
+          ],
+        },
+      ],
     }),
   });
 
@@ -108,7 +106,5 @@ export async function callGrokVision({
     throw new Error(payload?.error?.message || "Grok vision request failed");
   }
 
-  const message = payload?.output?.find((item) => item.type === "message");
-  const content = message?.content?.find((item) => item.type === "output_text");
-  return content?.text ?? "";
+  return payload?.choices?.[0]?.message?.content ?? "";
 }

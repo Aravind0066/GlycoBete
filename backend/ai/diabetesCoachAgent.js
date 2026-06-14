@@ -38,6 +38,7 @@ Include this exact safety disclaimer: ${MEDICAL_SAFETY_NOTE}`;
     return { ...fallback, ...parseJsonResponse(text, fallback), source: "grok" };
   } catch (error) {
     if (error instanceof GrokNotConfiguredError) return fallback;
-    throw error;
+    console.error("Coach agent failed:", error.message);
+    return fallback;
   }
 }

@@ -48,6 +48,7 @@ Include this exact safety disclaimer: ${MEDICAL_SAFETY_NOTE}`;
     };
   } catch (error) {
     if (error instanceof GrokNotConfiguredError) return fallback;
-    throw error;
+    console.error("Daily debrief agent failed:", error.message);
+    return fallback;
   }
 }

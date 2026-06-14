@@ -5,6 +5,8 @@ import { HeartLoading } from "@/components/HeartLoading";
 import { storage, levelFromXP, bossProgress, checkBossWeek } from "@/lib/gameEngine";
 import { getDashboardMetrics } from "@/lib/glycoBeteMetrics";
 import { syncQuestsFromDayState } from "@/lib/questEngine";
+import { getProfileDisplayName } from "@/lib/profileUtils";
+import { getAuthSession } from "@/lib/authService";
 import { Activity, Award, Bot, Check, Coins, Flame, Target } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
@@ -29,6 +31,10 @@ function Dashboard() {
   const navigate = useNavigate();
   const [tick, setTick] = useState(0);
   useEffect(() => {
+    if (!getAuthSession()) {
+      navigate({ to: "/auth" });
+      return;
+    }
     if (!storage.getProfile()) navigate({ to: "/onboarding" });
     checkBossWeek();
     syncQuestsFromDayState();
@@ -66,7 +72,12 @@ function Dashboard() {
               {CLASS_ICON[profile.class]}
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="font-display text-sm text-slate-100 truncate">{profile.name}</h1>
+              <h1 className="font-display text-sm text-slate-100 truncate">
+                {getProfileDisplayName(profile)}
+              </h1>
+              {profile.mode === "family" && profile.caregiverName && (
+                <p className="mt-1 text-xs text-slate-500">Caregiver: {profile.caregiverName}</p>
+              )}
               <p className="font-display text-[10px] text-amber-400 mt-2">
                 LEVEL {lvl.level} {profile.class.toUpperCase()}
               </p>

@@ -12,6 +12,17 @@ export type CoachResponse = {
   source: "grok" | "fallback";
 };
 
+export function extractMedicationsFromImage(args: {
+  image: { base64: string; mimeType: "image/jpeg" | "image/jpg" | "image/png" };
+}) {
+  return postJson<{
+    medicationsText: string;
+    extractedItems: string[];
+    safetyDisclaimer: string;
+    source: "grok" | "fallback";
+  }>("/api/ai/extract-medications", args);
+}
+
 export function askGlycoBeteCoach(args: {
   message: string;
   history: CoachMessage[];

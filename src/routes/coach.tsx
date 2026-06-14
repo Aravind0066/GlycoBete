@@ -47,12 +47,15 @@ function CoachPage() {
     setInput("");
     setLoading(true);
     try {
+      const history = nextMessages
+        .slice(-8)
+        .map((message) => ({
+          role: message.role,
+          content: message.content.slice(0, 1500),
+        }));
       const response = await askGlycoBeteCoach({
         message: question,
-        history: nextMessages.map((message) => ({
-          role: message.role,
-          content: message.content,
-        })),
+        history,
         profile: profile ? { ...profile } : undefined,
       });
       setMessages((current) => [
@@ -66,16 +69,20 @@ function CoachPage() {
       ]);
       rewardCoachChat();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "AI coach unavailable");
+      const message =
+        error instanceof Error && error.message.includes("Unexpected GlycoBete API")
+          ? "The AI service hit an error but your coach can still help with offline guidance."
+          : error instanceof Error
+            ? error.message
+            : "I could not reach the GlycoBete AI service.";
+      toast.error(message);
       setMessages((current) => [
         ...current,
         {
           role: "assistant",
           content:
-            error instanceof Error
-              ? error.message
-              : "I could not reach the GlycoBete AI service. Run `npm run backend:dev` in a second terminal, then refresh.",
-          suggestions: ["Start backend", "Check API key", "Try again"],
+            "I am here with general diabetes guidance even when live AI is unavailable. Log your glucose, pair carbs with protein, and take a short walk after meals. Try your question again in a moment.",
+          suggestions: ["Log today's glucose", "Ask about a meal", "Try again"],
           source: "fallback",
         },
       ]);
