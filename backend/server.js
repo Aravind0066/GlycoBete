@@ -1,9 +1,13 @@
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import express from "express";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { getDb } from "./db/client.js";
 import { registerAiRoutes } from "./routes/aiRoutes.js";
+import { registerAuthRoutes } from "./routes/authRoutes.js";
+import { registerDataRoutes } from "./routes/dataRoutes.js";
 
 dotenv.config();
 
@@ -15,6 +19,7 @@ const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:8080,http:/
   .filter(Boolean);
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(cookieParser());
 app.use(express.json({ limit: "5mb" }));
 
 function getSupabaseAdmin() {
@@ -38,14 +43,25 @@ const glucoseLogSchema = z.object({
 });
 
 app.get("/health", (_req, res) => {
+  let sqliteOk = false;
+  try {
+    getDb().prepare("SELECT 1").get();
+    sqliteOk = true;
+  } catch {
+    sqliteOk = false;
+  }
+
   res.json({
     ok: true,
     service: "glycobete-api",
+    sqliteConfigured: sqliteOk,
     databaseConfigured: Boolean(getSupabaseAdmin()),
     grokConfigured: Boolean(process.env.XAI_API_KEY || process.env.GROK_API_KEY),
   });
 });
 
+registerAuthRoutes(app);
+registerDataRoutes(app);
 registerAiRoutes(app);
 
 app.post("/api/glucose-logs", async (req, res) => {
@@ -79,7 +95,7 @@ app.post("/api/glucose-logs", async (req, res) => {
 
 app.use((err, _req, res, _next) => {
   console.error(err);
-  res.status(500).json({ error: "Unexpected GlycoBete API error" });
+  res.status(500).json({ error: err?.message || "Unexpected GlycoBete API error" });
 });
 
 app.listen(port, () => {

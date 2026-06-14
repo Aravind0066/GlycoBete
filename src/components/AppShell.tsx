@@ -1,9 +1,15 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Home, Utensils, BarChart3, Users, Trophy, Bot, LogOut } from "lucide-react";
+<<<<<<< HEAD
 import { storage, levelFromXP } from "@/lib/gameEngine";
 import { clearAuthSession, getAuthSession } from "@/lib/authService";
 import { getProfileDisplayName } from "@/lib/profileUtils";
+=======
+import { storage, levelFromXP, clearStore, hydrateFromBackend } from "@/lib/gameEngine";
+import { logout } from "@/lib/healthApi";
+>>>>>>> 0f48bc460758ddee6340a6a0ab869abcfb837edb
 import { useEffect, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 
 const NAV = [
   { to: "/dashboard", icon: Home, label: "HOME" },
@@ -20,7 +26,24 @@ export function AppShell({ children }: { children: ReactNode }) {
   const loc = useLocation();
   const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    hydrateFromBackend()
+      .then(() => setMounted(true))
+      .catch(() => setMounted(true));
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      clearStore();
+      localStorage.removeItem("gb_quests");
+      toast.success("Logged out");
+      navigate({ to: "/login", replace: true });
+    } catch {
+      toast.error("Logout failed");
+    }
+  };
 
   const profile = mounted ? storage.getProfile() : null;
   const game = mounted ? storage.getGame() : null;
@@ -75,6 +98,13 @@ export function AppShell({ children }: { children: ReactNode }) {
               </Link>
             );
           })}
+          <button
+            onClick={handleLogout}
+            className="mt-4 flex items-center gap-3 rounded-xl px-3 py-3 text-slate-400 transition-all hover:bg-red-950/50 hover:text-red-300"
+          >
+            <LogOut size={18} />
+            <span className="font-display text-[10px]">LOGOUT</span>
+          </button>
         </nav>
         {getAuthSession() && (
           <button

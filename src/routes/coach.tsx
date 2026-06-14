@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Bot, Send, ShieldAlert } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { askGlycoBeteCoach, type CoachResponse } from "@/lib/grokApi";
-import { storage } from "@/lib/gameEngine";
+import { storage, hydrateFromBackend } from "@/lib/gameEngine";
 import { rewardCoachChat } from "@/lib/rewardEngine";
 import { toast } from "sonner";
 
@@ -37,7 +37,11 @@ function CoachPage() {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const profile = useMemo(() => storage.getProfile(), []);
+  const [profile, setProfile] = useState(storage.getProfile());
+
+  useEffect(() => {
+    hydrateFromBackend().then(() => setProfile(storage.getProfile()));
+  }, []);
 
   const ask = async (text = input) => {
     const question = text.trim();

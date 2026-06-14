@@ -9,11 +9,16 @@ export function getApiBaseUrl(): string {
   return "http://localhost:8081";
 }
 
-export async function postJson<T>(path: string, body: unknown): Promise<T> {
+const fetchOptions: RequestInit = {
+  credentials: "include",
+};
+
+export async function postJson<T>(path: string, body: unknown = {}): Promise<T> {
   const url = `${getApiBaseUrl()}${path}`;
   let response: Response;
   try {
     response = await fetch(url, {
+      ...fetchOptions,
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -37,13 +42,49 @@ export async function postJson<T>(path: string, body: unknown): Promise<T> {
   return payload.data;
 }
 
+export async function putJson<T>(path: string, body: unknown): Promise<T> {
+  const url = `${getApiBaseUrl()}${path}`;
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...fetchOptions,
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new Error("Could not reach the GlycoBete API.");
+  }
+
+  let payload: ApiEnvelope<T>;
+  try {
+    payload = (await response.json()) as ApiEnvelope<T>;
+  } catch {
+    throw new Error(`GlycoBete API returned an invalid response (${response.status}).`);
+  }
+
+  if (!response.ok || !("data" in payload)) {
+    throw new Error("error" in payload ? payload.error : "API request failed");
+  }
+  return payload.data;
+}
+
 export async function getJson<T>(path: string): Promise<T> {
   const url = `${getApiBaseUrl()}${path}`;
   let response: Response;
   try {
-    response = await fetch(url);
+    response = await fetch(url, fetchOptions);
   } catch {
     throw new Error("Could not reach the GlycoBete API.");
   }
-  return (await response.json()) as T;
+
+  const payload = (await response.json()) as ApiEnvelope<T> | T;
+  if (response.ok && payload && typeof payload === "object" && "data" in payload) {
+    return payload.data;
+  }
+  if (!response.ok) {
+    const err = payload as { error?: string };
+    throw new Error(err.error || "API request failed");
+  }
+  return payload as T;
 }

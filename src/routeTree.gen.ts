@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SummaryRouteImport } from './routes/summary'
 import { Route as PartyRouteImport } from './routes/party'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as LogRouteImport } from './routes/log'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -35,6 +36,11 @@ const PartyRoute = PartyRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LogRoute = LogRouteImport.update({
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRoute
   '/log': typeof LogRoute
+  '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/party': typeof PartyRoute
   '/summary': typeof SummaryRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRoute
   '/log': typeof LogRoute
+  '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/party': typeof PartyRoute
   '/summary': typeof SummaryRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/insights': typeof InsightsRoute
   '/log': typeof LogRoute
+  '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/party': typeof PartyRoute
   '/summary': typeof SummaryRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/insights'
     | '/log'
+    | '/login'
     | '/onboarding'
     | '/party'
     | '/summary'
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/insights'
     | '/log'
+    | '/login'
     | '/onboarding'
     | '/party'
     | '/summary'
@@ -165,6 +176,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/insights'
     | '/log'
+    | '/login'
     | '/onboarding'
     | '/party'
     | '/summary'
@@ -180,6 +192,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   InsightsRoute: typeof InsightsRoute
   LogRoute: typeof LogRoute
+  LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   PartyRoute: typeof PartyRoute
   SummaryRoute: typeof SummaryRoute
@@ -206,6 +219,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/log': {
@@ -293,6 +313,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   InsightsRoute: InsightsRoute,
   LogRoute: LogRoute,
+  LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   PartyRoute: PartyRoute,
   SummaryRoute: SummaryRoute,

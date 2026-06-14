@@ -55,5 +55,10 @@ Thumbs.db
 *.njsproj
 *.sln
 
+# Local SQLite database
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
 # Swap files
 *.sw?

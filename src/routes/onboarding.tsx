@@ -1,8 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+<<<<<<< HEAD
 import { useEffect, useRef, useState } from "react";
 import { Camera, Loader2 } from "lucide-react";
 import { storage } from "@/lib/gameEngine";
 import { getAuthSession } from "@/lib/authService";
+=======
+import { useState } from "react";
+import { storage, hydrateFromBackend } from "@/lib/gameEngine";
+>>>>>>> 0f48bc460758ddee6340a6a0ab869abcfb837edb
 import { rewardProfileComplete } from "@/lib/rewardEngine";
 import { extractMedicationsFromImage } from "@/lib/grokApi";
 import {
@@ -12,7 +17,12 @@ import {
 } from "@/lib/ageUtils";
 import { buildProfileForSave, isProfileComplete } from "@/lib/profileUtils";
 import type { UserProfile } from "@/lib/types";
+<<<<<<< HEAD
 import { toast } from "sonner";
+=======
+import { HeartLoading } from "@/components/HeartLoading";
+import { useEffect } from "react";
+>>>>>>> 0f48bc460758ddee6340a6a0ab869abcfb837edb
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "Onboarding — GlycoBete" }] }),
@@ -37,8 +47,21 @@ function Onboarding() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState<Partial<UserProfile>>({});
+<<<<<<< HEAD
   const [medPreview, setMedPreview] = useState<string | null>(null);
   const [extractingMeds, setExtractingMeds] = useState(false);
+=======
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    hydrateFromBackend()
+      .then(() => {
+        if (storage.getProfile()) navigate({ to: "/dashboard" });
+        else setLoading(false);
+      })
+      .catch(() => navigate({ to: "/login" }));
+  }, [navigate]);
+>>>>>>> 0f48bc460758ddee6340a6a0ab869abcfb837edb
 
   useEffect(() => {
     if (!getAuthSession()) navigate({ to: "/auth", replace: true });
@@ -99,6 +122,8 @@ function Onboarding() {
     rewardProfileComplete();
     navigate({ to: "/dashboard" });
   };
+
+  if (loading) return <HeartLoading message="Preparing onboarding..." />;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-900 px-4 py-10">
