@@ -51,7 +51,7 @@ function Onboarding() {
                 ring="border-blue-500"
                 selected={profile.mode === "patient"}
                 onClick={() => select("mode", "patient")}
-                title="I HAVE DIABETES"
+                title="Diabetic Patient"
                 sub="Track your own health"
               />
               <ModeCard
@@ -60,7 +60,7 @@ function Onboarding() {
                 ring="border-green-500"
                 selected={profile.mode === "family"}
                 onClick={() => select("mode", "family")}
-                title="I CARE FOR SOMEONE"
+                title="CareTaker"
                 sub="Manage family member's health"
               />
             </div>
