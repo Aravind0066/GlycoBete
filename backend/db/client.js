@@ -14,9 +14,12 @@ function migrate(sqlite) {
     CREATE TABLE IF NOT EXISTS profiles (
       user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
       name TEXT NOT NULL DEFAULT '',
+      patient_name TEXT NOT NULL DEFAULT '',
+      caregiver_name TEXT NOT NULL DEFAULT '',
       mode TEXT NOT NULL DEFAULT 'patient',
       class TEXT NOT NULL DEFAULT 'warrior',
       age TEXT NOT NULL DEFAULT '',
+      date_of_birth TEXT NOT NULL DEFAULT '',
       gender TEXT NOT NULL DEFAULT '',
       diabetes_type TEXT NOT NULL DEFAULT '',
       medications TEXT NOT NULL DEFAULT ''
@@ -62,6 +65,18 @@ function migrate(sqlite) {
   const userColNames = new Set(userCols.map((c) => c.name));
   if (!userColNames.has("display_name")) {
     sqlite.exec("ALTER TABLE users ADD COLUMN display_name TEXT NOT NULL DEFAULT ''");
+  }
+
+  const profileCols = sqlite.prepare("PRAGMA table_info(profiles)").all();
+  const profileColNames = new Set(profileCols.map((c) => c.name));
+  if (!profileColNames.has("date_of_birth")) {
+    sqlite.exec("ALTER TABLE profiles ADD COLUMN date_of_birth TEXT NOT NULL DEFAULT ''");
+  }
+  if (!profileColNames.has("patient_name")) {
+    sqlite.exec("ALTER TABLE profiles ADD COLUMN patient_name TEXT NOT NULL DEFAULT ''");
+  }
+  if (!profileColNames.has("caregiver_name")) {
+    sqlite.exec("ALTER TABLE profiles ADD COLUMN caregiver_name TEXT NOT NULL DEFAULT ''");
   }
 }
 

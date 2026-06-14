@@ -6,7 +6,7 @@ import {
   XP_REWARDS,
   type XPGrantResult,
 } from "./gameEngine";
-import { ensureProfileQuest, recordQuestAction, syncWeeklyBossQuest } from "./questEngine";
+import { recordQuestAction, syncWeeklyBossQuest } from "./questEngine";
 
 const ACHIEVEMENT_ALIASES: Record<string, string> = {
   first_blood: "first_glucose_log",
@@ -53,8 +53,6 @@ export function rewardMedicationConfirm(): XPGrantResult | null {
 }
 
 export function rewardProfileComplete(): XPGrantResult | null {
-  ensureProfileQuest();
-  recordQuestAction("complete_profile");
   unlockAchievementWithAlias("profile_complete");
   return null;
 }

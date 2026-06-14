@@ -1,13 +1,8 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Home, Utensils, BarChart3, Users, Trophy, Bot, LogOut } from "lucide-react";
-<<<<<<< HEAD
-import { storage, levelFromXP } from "@/lib/gameEngine";
-import { clearAuthSession, getAuthSession } from "@/lib/authService";
-import { getProfileDisplayName } from "@/lib/profileUtils";
-=======
 import { storage, levelFromXP, clearStore, hydrateFromBackend } from "@/lib/gameEngine";
 import { logout } from "@/lib/healthApi";
->>>>>>> 0f48bc460758ddee6340a6a0ab869abcfb837edb
+import { getProfileDisplayName } from "@/lib/profileUtils";
 import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
@@ -30,8 +25,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     hydrateFromBackend()
       .then(() => setMounted(true))
-      .catch(() => setMounted(true));
-  }, []);
+      .catch(() => {
+        clearStore();
+        navigate({ to: "/login", replace: true });
+      });
+  }, [navigate]);
 
   const handleLogout = async () => {
     try {
@@ -106,18 +104,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="font-display text-[10px]">LOGOUT</span>
           </button>
         </nav>
-        {getAuthSession() && (
-          <button
-            type="button"
-            onClick={() => {
-              clearAuthSession();
-              navigate({ to: "/auth" });
-            }}
-            className="mt-auto flex items-center gap-2 rounded-xl px-3 py-3 text-sm text-slate-500 transition-all hover:bg-slate-800 hover:text-slate-300"
-          >
-            <LogOut size={16} /> Sign out
-          </button>
-        )}
       </aside>
 
       <main className="md:ml-60 pb-24 md:pb-8">{children}</main>

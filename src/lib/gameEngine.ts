@@ -110,6 +110,7 @@ function emptyDay(key: string): DayLog {
 }
 
 function queueSave(task: () => Promise<unknown>) {
+  if (!hydrated) return;
   task().catch((error) => {
     console.error("GlycoBete sync failed:", error);
   });
@@ -121,6 +122,10 @@ export function isHydrated() {
 
 export function clearStore() {
   store = { profile: null, game: null, days: {}, party: [], meds: [] };
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("gb_quests");
+    localStorage.removeItem("gb_auth_session");
+  }
   hydrated = false;
   hydratePromise = null;
 }
@@ -152,29 +157,17 @@ function questStorageKey() {
 }
 
 export const storage = {
-<<<<<<< HEAD
-  getProfile: (): UserProfile | null => {
-    const existing = read<UserProfile | null>(KEYS.profile, null);
-    if (!existing) return null;
-    if (!existing.dateOfBirth && existing.age) {
-      return { ...existing, dateOfBirth: existing.dateOfBirth ?? "" };
-    }
-    return existing;
-  },
-  setProfile: (p: UserProfile) => write(KEYS.profile, p),
-=======
   getProfile: (): UserProfile | null => store.profile,
   setProfile: (p: UserProfile) => {
     store.profile = p;
     queueSave(() => healthApi.saveProfile(p));
   },
->>>>>>> 0f48bc460758ddee6340a6a0ab869abcfb837edb
 
   getGame: (): GameState => {
     if (store.game) return store.game;
     const init = defaultGame();
     store.game = init;
-    queueSave(() => healthApi.saveGame(init));
+    if (hydrated) queueSave(() => healthApi.saveGame(init));
     return init;
   },
   setGame: (g: GameState) => {
@@ -187,7 +180,7 @@ export const storage = {
     const key = todayKey();
     if (!store.days[key]) {
       store.days[key] = emptyDay(key);
-      queueSave(() => healthApi.saveDay(store.days[key]));
+      if (hydrated) queueSave(() => healthApi.saveDay(store.days[key]));
     }
     return store.days[key];
   },

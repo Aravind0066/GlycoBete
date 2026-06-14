@@ -67,8 +67,11 @@ export function rowToProfile(row) {
   if (!row || !row.name) return null;
   return {
     name: row.name,
+    patientName: row.patient_name || undefined,
+    caregiverName: row.caregiver_name || undefined,
     mode: row.mode,
     class: row.class,
+    dateOfBirth: row.date_of_birth || "",
     age: row.age,
     gender: row.gender,
     diabetesType: row.diabetes_type,

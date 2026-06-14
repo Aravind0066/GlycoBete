@@ -4,11 +4,11 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
+    "dev": "vite dev --host localhost --port 8080",
     "dev:full": "node scripts/dev-full.mjs",
     "build": "vite build",
     "build:dev": "vite build --mode development",
-    "preview": "vite preview",
+    "preview": "vite preview --host localhost --port 8080",
     "backend:dev": "node backend/server.js",
     "lint": "eslint .",
     "format": "prettier --write ."

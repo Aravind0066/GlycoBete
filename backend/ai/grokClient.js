@@ -12,11 +12,11 @@ function getApiKey() {
 }
 
 function getTextModel() {
-  return process.env.XAI_MODEL || process.env.GROK_MODEL || "grok-2-1212";
+  return process.env.XAI_MODEL || process.env.GROK_MODEL || "grok-4.3";
 }
 
 function getVisionModel() {
-  return process.env.XAI_VISION_MODEL || process.env.GROK_VISION_MODEL || "grok-2-vision-1212";
+  return process.env.XAI_VISION_MODEL || process.env.GROK_VISION_MODEL || "grok-4.3";
 }
 
 function stripJsonFences(value) {
@@ -57,7 +57,8 @@ export async function callGrokText({ system, user, temperature = 0.25, maxOutput
 
   const payload = await response.json();
   if (!response.ok) {
-    throw new Error(payload?.error?.message || "Grok request failed");
+    const detail = payload?.error?.message || JSON.stringify(payload?.error ?? payload);
+    throw new Error(`Grok request failed (${response.status}): ${detail}`);
   }
 
   return payload?.choices?.[0]?.message?.content ?? "";
@@ -103,7 +104,8 @@ export async function callGrokVision({
 
   const payload = await response.json();
   if (!response.ok) {
-    throw new Error(payload?.error?.message || "Grok vision request failed");
+    const detail = payload?.error?.message || JSON.stringify(payload?.error ?? payload);
+    throw new Error(`Grok vision request failed (${response.status}): ${detail}`);
   }
 
   return payload?.choices?.[0]?.message?.content ?? "";

@@ -10,9 +10,12 @@ import {
 
 const profileSchema = z.object({
   name: z.string(),
+  patientName: z.string().optional(),
+  caregiverName: z.string().optional(),
   mode: z.enum(["patient", "family"]),
   class: z.enum(["warrior", "mage", "healer"]),
   age: z.string(),
+  dateOfBirth: z.string().optional().default(""),
   gender: z.string(),
   diabetesType: z.string(),
   medications: z.string(),
@@ -123,13 +126,16 @@ export function registerDataRoutes(app) {
 
     if (existing) {
       db.prepare(
-        `UPDATE profiles SET name = ?, mode = ?, class = ?, age = ?, gender = ?,
-         diabetes_type = ?, medications = ? WHERE user_id = ?`,
+        `UPDATE profiles SET name = ?, patient_name = ?, caregiver_name = ?, mode = ?, class = ?,
+         age = ?, date_of_birth = ?, gender = ?, diabetes_type = ?, medications = ? WHERE user_id = ?`,
       ).run(
         data.name,
+        data.patientName ?? "",
+        data.caregiverName ?? "",
         data.mode,
         data.class,
         data.age,
+        data.dateOfBirth ?? "",
         data.gender,
         data.diabetesType,
         data.medications,
@@ -137,14 +143,19 @@ export function registerDataRoutes(app) {
       );
     } else {
       db.prepare(
-        `INSERT INTO profiles (user_id, name, mode, class, age, gender, diabetes_type, medications)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO profiles (
+          user_id, name, patient_name, caregiver_name, mode, class, age, date_of_birth,
+          gender, diabetes_type, medications
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       ).run(
         req.user.id,
         data.name,
+        data.patientName ?? "",
+        data.caregiverName ?? "",
         data.mode,
         data.class,
         data.age,
+        data.dateOfBirth ?? "",
         data.gender,
         data.diabetesType,
         data.medications,

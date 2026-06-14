@@ -40,16 +40,6 @@ function Dashboard() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-<<<<<<< HEAD
-    if (!getAuthSession()) {
-      navigate({ to: "/auth" });
-      return;
-    }
-    if (!storage.getProfile()) navigate({ to: "/onboarding" });
-    checkBossWeek();
-    syncQuestsFromDayState();
-    setTick(1);
-=======
     (async () => {
       try {
         await hydrateFromBackend();
@@ -69,7 +59,6 @@ function Dashboard() {
         toast.error(message);
       }
     })();
->>>>>>> 0f48bc460758ddee6340a6a0ab869abcfb837edb
   }, [navigate]);
 
   if (error) {

@@ -14,6 +14,10 @@ export default defineConfig({
   },
   vite: {
     server: {
+      host: "localhost",
+      port: 8080,
+      strictPort: true,
+      open: "/login",
       proxy: {
         "/api": {
           target: "http://localhost:8081",
@@ -24,6 +28,11 @@ export default defineConfig({
           changeOrigin: true,
         },
       },
+      // Ensure TanStack Start is pre-bundled so the browser doesn't request
+      // raw `.tsx` files from node_modules (prevents dynamic-import fetch errors).
+      optimizeDeps: {
+        include: ["@tanstack/react-start"]
+      }
     },
   },
 });

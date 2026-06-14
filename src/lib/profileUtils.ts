@@ -15,7 +15,7 @@ export function getCaregiverName(profile: UserProfile | null | undefined): strin
 
 export function isProfileComplete(profile: Partial<UserProfile> | null | undefined): boolean {
   if (!profile?.mode || !profile.class || !profile.gender || !profile.diabetesType) return false;
-  if (!profile.dateOfBirth || !profile.medications?.trim()) return false;
+  if (!profile.dateOfBirth) return false;
   if (profile.mode === "family") {
     return Boolean(profile.caregiverName?.trim() && profile.patientName?.trim());
   }

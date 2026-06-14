@@ -117,6 +117,10 @@ export function ensureQuests() {
   return quests;
 }
 
+function isTrackedQuest(quest: QuestRecord) {
+  return quest.action !== "complete_profile";
+}
+
 function completeQuest(quest: QuestRecord): XPGrantResult | null {
   if (quest.completedAt) return null;
   quest.completedAt = new Date().toISOString();
@@ -159,7 +163,7 @@ export function recordQuestAction(action: QuestAction, amount = 1) {
 }
 
 export function getQuestProgress(): QuestProgressView {
-  const quests = ensureQuests();
+  const quests = ensureQuests().filter(isTrackedQuest);
   const items = quests.map((quest) => ({
     id: quest.id,
     label: quest.title,
@@ -182,23 +186,7 @@ export function getQuestProgress(): QuestProgressView {
 }
 
 export function ensureProfileQuest() {
-  ensureQuests();
-  const quests = readQuests();
-  if (quests.some((quest) => quest.action === "complete_profile")) return quests;
-  quests.push({
-    id: "profile-complete-once",
-    title: "Complete profile",
-    description: "Fill in your health profile details.",
-    questType: "daily",
-    action: "complete_profile",
-    targetCount: 1,
-    progressCount: 0,
-    xpReward: 20,
-    dueDate: todayKey(),
-    completedAt: null,
-  });
-  writeQuests(quests);
-  return quests;
+  return ensureQuests().filter(isTrackedQuest);
 }
 
 export function syncQuestsFromDayState() {

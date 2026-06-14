@@ -13,6 +13,7 @@ export function registerAuthRoutes(app) {
       return res.status(400).json({ error: "Enter a valid name" });
     }
 
+    const db = getDb();
     const user = createUser(parsed.data.name);
     res.cookie(SESSION_COOKIE, user.id, {
       httpOnly: true,

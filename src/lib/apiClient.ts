@@ -13,20 +13,38 @@ const fetchOptions: RequestInit = {
   credentials: "include",
 };
 
+const API_TIMEOUT_MS = 8000;
+const API_UNREACHABLE =
+  "Could not reach the GlycoBete API. Run `npm run dev:full` and open http://localhost:8080/login";
+
+async function fetchWithTimeout(url: string, init?: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...fetchOptions, ...init, signal: controller.signal });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error(
+        "GlycoBete API timed out. Run `npm run dev:full` and open http://localhost:8080/login",
+      );
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function postJson<T>(path: string, body: unknown = {}): Promise<T> {
   const url = `${getApiBaseUrl()}${path}`;
   let response: Response;
   try {
-    response = await fetch(url, {
-      ...fetchOptions,
+    response = await fetchWithTimeout(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
   } catch {
-    throw new Error(
-      "Could not reach the GlycoBete API. Run `npm run backend:dev` and ensure VITE_API_BASE_URL is set or use the Vite dev proxy.",
-    );
+    throw new Error(API_UNREACHABLE);
   }
 
   let payload: ApiEnvelope<T>;
@@ -46,14 +64,13 @@ export async function putJson<T>(path: string, body: unknown): Promise<T> {
   const url = `${getApiBaseUrl()}${path}`;
   let response: Response;
   try {
-    response = await fetch(url, {
-      ...fetchOptions,
+    response = await fetchWithTimeout(url, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
   } catch {
-    throw new Error("Could not reach the GlycoBete API.");
+    throw new Error(API_UNREACHABLE);
   }
 
   let payload: ApiEnvelope<T>;
@@ -73,9 +90,9 @@ export async function getJson<T>(path: string): Promise<T> {
   const url = `${getApiBaseUrl()}${path}`;
   let response: Response;
   try {
-    response = await fetch(url, fetchOptions);
+    response = await fetchWithTimeout(url);
   } catch {
-    throw new Error("Could not reach the GlycoBete API.");
+    throw new Error(API_UNREACHABLE);
   }
 
   const payload = (await response.json()) as ApiEnvelope<T> | T;
