@@ -26,6 +26,8 @@ function Onboarding() {
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState<Partial<UserProfile>>({});
 
+  const isFamily = profile.mode === "family";
+
   const select = (k: keyof UserProfile, v: string) => setProfile((p) => ({ ...p, [k]: v }));
 
   const finish = () => {
@@ -76,42 +78,42 @@ function Onboarding() {
         {step === 1 && (
           <div className="animate-slide-up">
             <h1 className="font-display text-xl text-center text-slate-100 mb-2">
-              BUILD YOUR CHARACTER
+              {isFamily ? "PATIENT DETAILS" : "BUILD YOUR CHARACTER"}
             </h1>
             <div className="h-2 w-full rounded-full bg-slate-700 mb-8 overflow-hidden">
               <div className="h-full bg-amber-500" style={{ width: "66%" }} />
             </div>
             <div className="space-y-4">
-              <Field label="NAME">
+              <Field label={isFamily ? "PATIENT NAME" : "NAME"}>
                 <input
                   value={profile.name ?? ""}
                   onChange={(e) => select("name", e.target.value)}
-                  placeholder="Your name"
+                  placeholder={isFamily ? "Patient's name" : "Your name"}
                   className="w-full rounded-xl border border-slate-600 bg-slate-900 p-4 text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none"
                 />
               </Field>
-              <Field label="AGE">
+              <Field label={isFamily ? "PATIENT AGE" : "AGE"}>
                 <Select
                   value={profile.age}
                   onChange={(v) => select("age", v)}
                   options={["Under 18", "18–40", "41–60", "60+"]}
                 />
               </Field>
-              <Field label="GENDER">
+              <Field label={isFamily ? "PATIENT GENDER" : "GENDER"}>
                 <Select
                   value={profile.gender}
                   onChange={(v) => select("gender", v)}
                   options={["Male", "Female", "Prefer not to say"]}
                 />
               </Field>
-              <Field label="DIABETES TYPE">
+              <Field label={isFamily ? "PATIENT DIABETES TYPE" : "DIABETES TYPE"}>
                 <Select
                   value={profile.diabetesType}
                   onChange={(v) => select("diabetesType", v)}
                   options={["Type 1", "Type 2", "Pre-diabetic", "Not sure"]}
                 />
               </Field>
-              <Field label="CURRENT MEDICATIONS">
+              <Field label={isFamily ? "PATIENT CURRENT MEDICATIONS" : "CURRENT MEDICATIONS"}>
                 <textarea
                   value={profile.medications ?? ""}
                   onChange={(e) => select("medications", e.target.value)}
