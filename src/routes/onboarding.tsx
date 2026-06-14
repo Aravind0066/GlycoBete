@@ -1,7 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { storage } from "@/lib/gameEngine";
+import { storage, hydrateFromBackend } from "@/lib/gameEngine";
+import { rewardProfileComplete } from "@/lib/rewardEngine";
 import type { UserProfile } from "@/lib/types";
+import { HeartLoading } from "@/components/HeartLoading";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "Onboarding — GlycoBete" }] }),
@@ -25,6 +28,16 @@ function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState<Partial<UserProfile>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    hydrateFromBackend()
+      .then(() => {
+        if (storage.getProfile()) navigate({ to: "/dashboard" });
+        else setLoading(false);
+      })
+      .catch(() => navigate({ to: "/login" }));
+  }, [navigate]);
 
   const isFamily = profile.mode === "family";
 
@@ -32,8 +45,11 @@ function Onboarding() {
 
   const finish = () => {
     storage.setProfile(profile as UserProfile);
+    rewardProfileComplete();
     navigate({ to: "/dashboard" });
   };
+
+  if (loading) return <HeartLoading message="Preparing onboarding..." />;
 
   return (
     <div className="min-h-screen bg-slate-900 px-4 py-10 flex flex-col items-center">

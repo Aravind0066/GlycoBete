@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { HeartLoading } from "@/components/HeartLoading";
-import { storage, unlockAchievement } from "@/lib/gameEngine";
+import { storage } from "@/lib/gameEngine";
+import { unlockAchievementWithAlias } from "@/lib/rewardEngine";
 import type { PartyMember } from "@/lib/types";
 import { toast } from "sonner";
 import { UserPlus } from "lucide-react";
@@ -36,7 +37,7 @@ function Party() {
     const next = [...members, { id: crypto.randomUUID(), name: name.trim(), relationship: rel }];
     storage.setParty(next);
     setMembers(next);
-    unlockAchievement("party_leader");
+    unlockAchievementWithAlias("party_leader");
     setName("");
     setOpen(false);
     toast.success("Member added to your party");

@@ -7,8 +7,8 @@ import {
   last7Days,
   bossProgress,
   DOCTOR_REPORT_COST,
-  unlockAchievement,
 } from "@/lib/gameEngine";
+import { unlockAchievementWithAlias } from "@/lib/rewardEngine";
 import { analyzeWeek } from "@/lib/geminiApi";
 import type { WeeklyInsights } from "@/lib/types";
 import {
@@ -75,7 +75,7 @@ function Insights() {
     }
     game.healthCoins -= DOCTOR_REPORT_COST;
     storage.setGame(game);
-    unlockAchievement("data_mage");
+    unlockAchievementWithAlias("data_mage");
     const profile = storage.getProfile();
     const text = `GLYCOBETE PATIENT REPORT
 ========================

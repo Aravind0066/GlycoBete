@@ -5,11 +5,8 @@ import { HeartLoading } from "@/components/HeartLoading";
 import { LevelUpOverlay } from "@/components/LevelUpOverlay";
 import {
   storage,
-  grantXP,
-  updateStreakOnCheckin,
-  XP_REWARDS,
-  unlockAchievement,
 } from "@/lib/gameEngine";
+import { rewardGlucoseCheckin, rewardMedicationConfirm } from "@/lib/rewardEngine";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/checkin")({
@@ -62,8 +59,8 @@ function Checkin() {
     today.symptoms = symptoms;
     today.medsTaken = medsTaken;
     storage.saveDay(today);
-    updateStreakOnCheckin();
-    const res = grantXP(XP_REWARDS.morning_checkin);
+    const res = rewardGlucoseCheckin();
+    if (medsTaken) rewardMedicationConfirm();
     setLoading(false);
     toast.success("Check-in logged! Streak continues 🔥");
     if (res.leveledUp && res.newLevelTitle) {
@@ -72,8 +69,6 @@ function Checkin() {
     } else {
       setTimeout(() => navigate({ to: "/dashboard" }), 1500);
     }
-    const game = storage.getGame();
-    if (game.streak >= 7) unlockAchievement("week_warrior");
   };
 
   return (

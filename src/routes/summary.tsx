@@ -2,7 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { HeartLoading } from "@/components/HeartLoading";
-import { storage, grantXP, XP_REWARDS, bossProgress, unlockAchievement } from "@/lib/gameEngine";
+import {
+  storage,
+  bossProgress,
+} from "@/lib/gameEngine";
+import { rewardEveningSummary, rewardBossDefeat } from "@/lib/rewardEngine";
 import { analyzeDay, type DailySummary } from "@/lib/geminiApi";
 
 export const Route = createFileRoute("/summary")({
@@ -72,8 +76,9 @@ function SummaryPage() {
       game.activeQuest = res.tomorrows_quest;
       storage.setGame(game);
 
-      grantXP(XP_REWARDS.evening_summary);
-      unlockAchievement("night_owl");
+      rewardEveningSummary();
+      const bossState = bossProgress();
+      if (bossState.defeated) rewardBossDefeat();
 
       updateXpBreakdown();
       setData(res);
@@ -121,7 +126,7 @@ function SummaryPage() {
       <div className="max-w-2xl mx-auto p-4 md:p-8 space-y-4">
         <div>
           <h1 className="font-display text-lg">TODAY'S DEBRIEF</h1>
-          <p className="text-sm text-slate-400 mt-2">Gemini analyzed your full day.</p>
+          <p className="text-sm text-slate-400 mt-2">GlycoBete analyzed your full day.</p>
         </div>
 
         <div className={`rounded-2xl border-2 p-5 text-center animate-slide-up ${badgeCls}`}>

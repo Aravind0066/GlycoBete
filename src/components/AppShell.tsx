@@ -1,11 +1,14 @@
-import { Link, useLocation } from "@tanstack/react-router";
-import { Home, Utensils, BarChart3, Users, Trophy } from "lucide-react";
-import { storage, levelFromXP } from "@/lib/gameEngine";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { Home, Utensils, BarChart3, Users, Trophy, Bot, LogOut } from "lucide-react";
+import { storage, levelFromXP, clearStore, hydrateFromBackend } from "@/lib/gameEngine";
+import { logout } from "@/lib/healthApi";
 import { useEffect, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 
 const NAV = [
   { to: "/dashboard", icon: Home, label: "HOME" },
   { to: "/log", icon: Utensils, label: "LOG" },
+  { to: "/coach", icon: Bot, label: "AI" },
   { to: "/insights", icon: BarChart3, label: "STATS" },
   { to: "/party", icon: Users, label: "PARTY" },
   { to: "/achievements", icon: Trophy, label: "WINS" },
@@ -15,8 +18,26 @@ const CLASS_ICON = { warrior: "🗡️", mage: "🔮", healer: "💚" } as const
 
 export function AppShell({ children }: { children: ReactNode }) {
   const loc = useLocation();
+  const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    hydrateFromBackend()
+      .then(() => setMounted(true))
+      .catch(() => setMounted(true));
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      clearStore();
+      localStorage.removeItem("gb_quests");
+      toast.success("Logged out");
+      navigate({ to: "/login", replace: true });
+    } catch {
+      toast.error("Logout failed");
+    }
+  };
 
   const profile = mounted ? storage.getProfile() : null;
   const game = mounted ? storage.getGame() : null;
@@ -69,6 +90,13 @@ export function AppShell({ children }: { children: ReactNode }) {
               </Link>
             );
           })}
+          <button
+            onClick={handleLogout}
+            className="mt-4 flex items-center gap-3 rounded-xl px-3 py-3 text-slate-400 transition-all hover:bg-red-950/50 hover:text-red-300"
+          >
+            <LogOut size={18} />
+            <span className="font-display text-[10px]">LOGOUT</span>
+          </button>
         </nav>
       </aside>
 
@@ -76,7 +104,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-slate-700 bg-slate-900">
-        <div className="grid grid-cols-5">
+        <div className="grid grid-cols-6">
           {NAV.map((n) => {
             const active = loc.pathname === n.to;
             const Icon = n.icon;
