@@ -40,6 +40,7 @@ function readQuests(): QuestRecord[] {
 function writeQuests(quests: QuestRecord[]) {
   if (typeof window === "undefined") return;
   localStorage.setItem(QUESTS_KEY, JSON.stringify(quests));
+  import("./healthApi").then(({ saveQuests }) => saveQuests(quests).catch(console.error));
 }
 
 function dailyTemplates(): Omit<QuestRecord, "progressCount" | "completedAt">[] {
@@ -199,12 +200,12 @@ export function ensureProfileQuest() {
   writeQuests(quests);
   return quests;
 }
+
+export function syncQuestsFromDayState() {
   const today = storage.getToday();
-  const profile = storage.getProfile();
   if (today.fastingSugar) recordQuestAction("log_glucose");
   if (today.meals.length > 0) recordQuestAction("log_meal");
   if (today.medsTaken) recordQuestAction("confirm_meds");
-export function syncQuestsFromDayState() {
   if (today.eveningSummary) recordQuestAction("evening_summary");
   syncWeeklyBossQuest();
 }

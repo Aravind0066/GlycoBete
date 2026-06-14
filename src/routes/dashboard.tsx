@@ -2,10 +2,17 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { HeartLoading } from "@/components/HeartLoading";
-import { storage, levelFromXP, bossProgress, checkBossWeek } from "@/lib/gameEngine";
+import {
+  storage,
+  levelFromXP,
+  bossProgress,
+  checkBossWeek,
+  hydrateFromBackend,
+} from "@/lib/gameEngine";
 import { getDashboardMetrics } from "@/lib/glycoBeteMetrics";
 import { syncQuestsFromDayState } from "@/lib/questEngine";
 import { Activity, Award, Bot, Check, Coins, Flame, Target } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — GlycoBete" }] }),
@@ -27,15 +34,52 @@ const TONE_STYLE = {
 
 function Dashboard() {
   const navigate = useNavigate();
-  const [tick, setTick] = useState(0);
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    if (!storage.getProfile()) navigate({ to: "/onboarding" });
-    checkBossWeek();
-    syncQuestsFromDayState();
-    setTick(1);
+    (async () => {
+      try {
+        await hydrateFromBackend();
+        if (!storage.getProfile()) {
+          navigate({ to: "/onboarding" });
+          return;
+        }
+        checkBossWeek();
+        syncQuestsFromDayState();
+        setReady(true);
+      } catch (err) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Could not load dashboard from the backend.";
+        setError(message);
+        toast.error(message);
+      }
+    })();
   }, [navigate]);
 
-  if (!tick) return <HeartLoading message="Loading your dashboard..." />;
+  if (error) {
+    return (
+      <AppShell>
+        <div className="mx-auto max-w-lg p-8 text-center">
+          <p className="text-red-300">{error}</p>
+          <p className="mt-4 text-sm text-slate-400">
+            Run <code className="text-amber-400">npm run dev:full</code> to start both frontend and
+            backend.
+          </p>
+          <Link
+            to="/login"
+            className="mt-6 inline-flex rounded-full bg-amber-500 px-6 py-3 font-display text-xs text-slate-900"
+          >
+            BACK TO LOGIN
+          </Link>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (!ready) return <HeartLoading message="Loading your dashboard..." />;
   const profile = storage.getProfile();
   if (!profile) return <HeartLoading message="Preparing onboarding..." />;
   const game = storage.getGame();

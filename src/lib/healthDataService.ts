@@ -1,5 +1,6 @@
 import type { DayLog, GameState, PartyMember, UserProfile } from "./types";
-import { storage } from "./gameEngine";
+import { storage, hydrateFromBackend } from "./gameEngine";
+import * as healthApi from "./healthApi";
 
 export type HealthDataService = {
   getProfile: () => Promise<UserProfile | null>;
@@ -10,19 +11,45 @@ export type HealthDataService = {
   saveDayLog: (day: DayLog) => Promise<void>;
   getPartyMembers: () => Promise<PartyMember[]>;
   savePartyMembers: (members: PartyMember[]) => Promise<void>;
+  hydrate: () => Promise<void>;
 };
 
-export const localHealthDataService: HealthDataService = {
-  getProfile: async () => storage.getProfile(),
-  saveProfile: async (profile) => storage.setProfile(profile),
-  getGameState: async () => storage.getGame(),
-  saveGameState: async (game) => storage.setGame(game),
-  getTodayLog: async () => storage.getToday(),
-  saveDayLog: async (day) => storage.saveDay(day),
-  getPartyMembers: async () => storage.getParty(),
-  savePartyMembers: async (members) => storage.setParty(members),
+export const backendHealthDataService: HealthDataService = {
+  hydrate: () => hydrateFromBackend(),
+  getProfile: async () => {
+    await hydrateFromBackend();
+    return storage.getProfile();
+  },
+  saveProfile: async (profile) => {
+    storage.setProfile(profile);
+    await healthApi.saveProfile(profile);
+  },
+  getGameState: async () => {
+    await hydrateFromBackend();
+    return storage.getGame();
+  },
+  saveGameState: async (game) => {
+    storage.setGame(game);
+    await healthApi.saveGame(game);
+  },
+  getTodayLog: async () => {
+    await hydrateFromBackend();
+    return storage.getToday();
+  },
+  saveDayLog: async (day) => {
+    storage.saveDay(day);
+    await healthApi.saveDay(day);
+  },
+  getPartyMembers: async () => {
+    await hydrateFromBackend();
+    return storage.getParty();
+  },
+  savePartyMembers: async (members) => {
+    storage.setParty(members);
+    await healthApi.saveParty(members);
+  },
 };
 
 export function getHealthDataService() {
-  return localHealthDataService;
+  return backendHealthDataService;
 }
